@@ -53,7 +53,7 @@ SERVER
 
 CLIENT
 1. Download the latest Nuget Package for WTT-ClientCommonLib
-2. Add `[BepInDependency("com.WTT.ClientCommonLib")]` at the top of your main plugin .cs file.
+2. Add `[BepInDependency("com.wtt.commonlib")]` at the top of your main plugin .cs file.
 
 ## Quick Start
 
@@ -1453,7 +1453,7 @@ using WTTClientCommonLib.Services;
 
 namespace YOURMOD
 {
-    [BepInDependency("com.WTT.ClientCommonLib")]
+    [BepInDependency("com.wtt.commonlib")]
     [BepInPlugin("com.YOURMOD.Core", "YOURMOD", "1.0")]
     internal class YOURMOD : BaseUnityPlugin
     {
