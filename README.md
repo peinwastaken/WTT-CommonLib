@@ -52,7 +52,7 @@ SERVER
 2. Inject `WTTServerCommonLib` through the constructor
 
 CLIENT
-1. Download the latest Nuget Package for WTT-ClientCommonLib
+1. Download the latest Nuget Package for WTT-ClientCommonLib through your preferred IDE
 2. Add `[BepInDependency("com.wtt.commonlib")]` at the top of your main plugin .cs file.
 
 ## Quick Start
