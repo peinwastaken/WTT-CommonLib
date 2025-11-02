@@ -11,11 +11,11 @@ namespace WTTServerCommonLib;
 
 public record ModMetadata : AbstractModMetadata
 {
-    public override string ModGuid { get; init; } = "com.WTT.ServerCommonLib";
+    public override string ModGuid { get; init; } = "com.wtt.commonlib";
     public override string Name { get; init; } = "WTT-ServerCommonLib";
     public override string Author { get; init; } = "GrooveypenguinX";
     public override List<string>? Contributors { get; init; }
-    public override Version Version { get; init; } = new("1.0.0");
+    public override Version Version { get; init; } = new(typeof(ModMetadata).Assembly.GetName().Version?.ToString(3));
     public override Range SptVersion { get; init; } = new("~4.0.1");
     public override List<string>? Incompatibilities { get; init; }
     public override Dictionary<string, Range>? ModDependencies { get; init; }

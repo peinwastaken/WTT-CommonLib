@@ -12,7 +12,7 @@ using WTTClientCommonLib.Services;
 
 namespace WTTClientCommonLib;
 
-[BepInPlugin("com.WTT.ClientCommonLib", "WTT-ClientCommonLib", "1.0.0")]
+[BepInPlugin("com.wtt.commonlib", "WTT-ClientCommonLib", "2.0.0")]
 public class WTTClientCommonLib : BaseUnityPlugin
 {
     private static CommandProcessor.CommandProcessor _commandProcessor;
@@ -24,7 +24,7 @@ public class WTTClientCommonLib : BaseUnityPlugin
     private PlayerWorldStats _playerWorldStats;
     public SpawnCommands SpawnCommands;
     public static WTTClientCommonLib Instance { get; private set; }
-
+    
     private void Awake()
     {
         Instance = this;
