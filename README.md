@@ -50,7 +50,7 @@ A comprehensive modding library for SPT that simplifies adding custom content to
 SERVER
 1. Download the latest Nuget Package for WTT-ServerCommonLib through your preferred IDE
 2. Inject `WTTServerCommonLib` through the constructor
-3. Get your current assembly using `Assembly.GetExecutingAsswmbly()`
+3. Get your current assembly using `Assembly.GetExecutingAssembly()`
 4. Pass it to the services you desire to use
 
 CLIENT
