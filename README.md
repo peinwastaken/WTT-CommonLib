@@ -137,7 +137,7 @@ await wttCommon.CustomItemServiceExtended.CreateCustomItems(assembly,
 ```json
 {
   // Unique ID for this custom item
-  "6761b213607f9a6f79017aef": {
+  "6909361f894fe6b4662b4ba2": {
     // The vanilla Tarkov template ID of the item it's copying properties from (e.g., another belt or container)
     "itemTplToClone": "572b7adb24597762ae139821",
 
@@ -283,7 +283,7 @@ await wttCommon.CustomItemServiceExtended.CreateCustomItems(assembly,
     "traders": {
       "RAGMAN": {
         // Offer ID (unique ID - use a mongoID generator for this)
-        "681ce253b2fd4632d780ca88": {
+        "69093630552e8bcde48d4421": {
           // Requirements for buying it at the trader
           "barterSettings": {
             "loyalLevel": 1,
