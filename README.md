@@ -79,6 +79,9 @@ public record ModMetadata : AbstractModMetadata
     public override Range SptVersion { get; init; } = new("4.0.1");
     public override string License { get; init; } = "MIT";
     public override bool? IsBundleMod { get; init; } = true;
+    public override Dictionary<string, Range>? ModDependencies { get; init; }
+    public override string? Url { get; init; }
+    public override List<string>? Contributors { get; init; }
 }
 
 [Injectable(TypePriority = OnLoadOrder.PostDBModLoader + 2)]
