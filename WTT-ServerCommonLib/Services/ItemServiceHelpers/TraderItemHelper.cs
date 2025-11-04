@@ -46,9 +46,14 @@ public class TraderItemHelper(ISptLogger<TraderItemHelper> logger, DatabaseServi
                         Upd = new Upd
                         {
                             UnlimitedCount = scheme.ConfigBarterSettings.UnlimitedCount,
-                            StackObjectsCount = scheme.ConfigBarterSettings.StackObjectsCount
+                            StackObjectsCount = scheme.ConfigBarterSettings.StackObjectsCount,
                         }
                     };
+
+                    if (scheme.ConfigBarterSettings.BuyRestrictionMax != null)
+                    {
+                        newItem.Upd.BuyRestrictionMax = scheme.ConfigBarterSettings.BuyRestrictionMax;
+                    }
 
                     trader.Assort.Items.Add(newItem);
 
