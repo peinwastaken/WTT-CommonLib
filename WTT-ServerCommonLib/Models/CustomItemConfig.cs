@@ -128,6 +128,10 @@ public class CustomItemConfig
     [JsonPropertyName("emptyPropSlot")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public EmptySlotScheme? EmptyPropSlot { get; set; }
+    
+    [JsonPropertyName("addtoSecureFilters")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? AddToSecureFilters { get; set; }
 
     public void Validate()
     {
@@ -347,6 +351,7 @@ public class ConfigTraderScheme
     [JsonPropertyName("barterSettings")] public required ConfigBarterSettings ConfigBarterSettings { get; set; }
 
     [JsonPropertyName("barters")] public required List<ConfigBarterScheme> Barters { get; set; } = new();
+    
 }
 
 public class ConfigBarterSettings
@@ -355,8 +360,10 @@ public class ConfigBarterSettings
 
     [JsonPropertyName("unlimitedCount")] public required bool UnlimitedCount { get; set; }
 
-    [JsonPropertyName("stackObjectsCount")]
-    public required int StackObjectsCount { get; set; }
+    [JsonPropertyName("stackObjectsCount")] public required int StackObjectsCount { get; set; }
+
+    [JsonPropertyName("buyRestrictionMax")] public int? BuyRestrictionMax { get; set; }
+    
 }
 
 public class ConfigBarterScheme

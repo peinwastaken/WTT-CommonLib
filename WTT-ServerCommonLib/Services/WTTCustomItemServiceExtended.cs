@@ -37,10 +37,12 @@ public class WTTCustomItemServiceExtended(
     BotLootHelper botLootHelper,
     ConfigHelper configHelper,
     StaticAmmoHelper staticAmmoHelper,
-    EmptyPropSlotHelper emptyPropSlotHelper
+    EmptyPropSlotHelper emptyPropSlotHelper,
+    SecureFiltersHelper secureFiltersHelper
 )
 {
     private readonly List<(string newItemId, CustomItemConfig config)> _deferredModSlotConfigs = new();
+    private readonly List<(string newItemId, CustomItemConfig config)> _deferredSecureFilterConfigs = new();
     private DatabaseTables? _database;
 
     /// <summary>
@@ -176,6 +178,9 @@ public class WTTCustomItemServiceExtended(
         
         if (config.AddToEmptyPropSlots == true)
             emptyPropSlotHelper.AddCustomSlots(config, newItemId);
+        if (config.AddToSecureFilters == true)
+            AddDeferredSecureFilters(newItemId, config);
+
     }
 
     private void AddDeferredModSlot(string newItemId, CustomItemConfig config)
@@ -215,5 +220,45 @@ public class WTTCustomItemServiceExtended(
         _deferredModSlotConfigs.Clear();
 
         LogHelper.Debug(logger, "Finished processing deferred modslots");
+    }
+    
+    private void AddDeferredSecureFilters(string newItemId, CustomItemConfig config)
+    {
+        if (_deferredSecureFilterConfigs.Any(d => d.newItemId == newItemId))
+        {
+            logger.Warning($"Deferred secure filters for {newItemId} already exists, skipping.");
+            return;
+        }
+
+        _deferredSecureFilterConfigs.Add((newItemId, config));
+    }
+
+    public void ProcessDeferredSecureFilters()
+    {
+        if (_deferredSecureFilterConfigs.Count == 0)
+        {
+            LogHelper.Debug(logger, "No deferred secure filters to process");
+            return;
+        }
+
+        LogHelper.Debug(logger, $"Processing {_deferredSecureFilterConfigs.Count} deferred secure filters...");
+
+        foreach (var (newItemId, config) in _deferredSecureFilterConfigs)
+            try
+            {
+                if (_database == null) return;
+                secureFiltersHelper.AddToSecureFilters(config, newItemId);
+
+                if (logger.IsLogEnabled(LogLevel.Debug))
+                    LogHelper.Debug(logger, $"Processed secure filters for {newItemId}");
+            }
+            catch (Exception ex)
+            {
+                logger.Critical($"Failed processing secure filters for {newItemId}", ex);
+            }
+
+        _deferredSecureFilterConfigs.Clear();
+
+        LogHelper.Debug(logger, "Finished processing deferred secure filters");
     }
 }
