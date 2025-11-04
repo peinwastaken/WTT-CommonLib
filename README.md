@@ -50,9 +50,11 @@ A comprehensive modding library for SPT that simplifies adding custom content to
 SERVER
 1. Download the latest Nuget Package for WTT-ServerCommonLib through your preferred IDE
 2. Inject `WTTServerCommonLib` through the constructor
+3. Get your current assembly using `Assembly.GetExecutingAssembly()`
+4. Pass it to the services you desire to use
 
 CLIENT
-1. Download the latest Nuget Package for WTT-ClientCommonLib
+1. Download the latest Nuget Package for WTT-ClientCommonLib through your preferred IDE
 2. Add `[BepInDependency("com.wtt.commonlib")]` at the top of your main plugin .cs file.
 
 ## Quick Start
@@ -77,6 +79,10 @@ public record ModMetadata : AbstractModMetadata
     public override Range SptVersion { get; init; } = new("4.0.1");
     public override string License { get; init; } = "MIT";
     public override bool? IsBundleMod { get; init; } = true;
+    public override Dictionary<string, Range>? ModDependencies { get; init; }
+    public override string? Url { get; init; }
+    public override List<string>? Contributors { get; init; }
+    public override List<string>? Incompatibilities { get; init; }
 }
 
 [Injectable(TypePriority = OnLoadOrder.PostDBModLoader + 2)]
@@ -86,9 +92,14 @@ public class YourMod(
 {
     public async Task OnLoad()
     {
+
+        // Get your current assembly
+        var assembly = Assembly.GetExecutingAssembly();
+
+
         // Use WTT-CommonLib services
-        await wttCommon.CustomItemServiceExtended.CreateCustomItems();
-        await wttCommon.CustomLocaleService.CreateCustomLocales();
+        await wttCommon.CustomItemServiceExtended.CreateCustomItems(assembly);
+        await wttCommon.CustomLocaleService.CreateCustomLocales(assembly);
         
         await Task.CompletedTask;
     }
@@ -98,7 +109,7 @@ public class YourMod(
 ### Key Points:
 - Inject `WTTServerCommonLib.WTTServerCommonLib` through the constructor
 - Set `TypePriority = OnLoadOrder.PostDBModLoader + 2` to load after the database
-- Utilize any of the public services available
+- Pass your current assembly to utilize any of the public services available
 
 ---
 
@@ -111,10 +122,10 @@ public class YourMod(
 **Usage**:
 ```csharp
 // Use default path (db/CustomItems/)
-await wttCommon.CustomItemServiceExtended.CreateCustomItems();
+await wttCommon.CustomItemServiceExtended.CreateCustomItems(assembly);
 
 // Or specify custom path
-await wttCommon.CustomItemServiceExtended.CreateCustomItems( 
+await wttCommon.CustomItemServiceExtended.CreateCustomItems(assembly,
     Path.Join("db", "MyCustomItemFolder"));
 ```
 
@@ -125,19 +136,37 @@ await wttCommon.CustomItemServiceExtended.CreateCustomItems(
 
 ```json
 {
-  "6761b213607f9a6f79017aef": {
+  // Unique ID for this custom item
+  "6909361f894fe6b4662b4ba2": {
+    // The vanilla Tarkov template ID of the item it's copying properties from (e.g., another belt or container)
     "itemTplToClone": "572b7adb24597762ae139821",
+
+    // The parent category ID in the game’s item database, controls where it appears in the item tree
     "parentId": "6815465859b8c6ff13f94026",
+
+    // The parent category in the handbook (for sorting/grouping in the UI for FleaMarket)
     "handbookParentId": "5b5f6f8786f77447ed563642",
+
+    // Properties that will override what the "itemTplToClone" has by default
     "overrideProperties": {
+      // Make this item examined (visible) by default in the player's inventory
       "ExaminedByDefault": true,
+
+      // Asset prefab for this item: what 3D model and icon the game should use
       "Prefab": {
+        // Path to the AssetBundle file for the item
         "path": "Gear_Belts/belt_fannypack.bundle",
         "rcid": ""
       },
+
+      // Inventory size: 2x2 grid spaces
       "Width": 2,
       "Height": 2,
+
+      // How much it weighs (kg)
       "Weight": 0.46,
+
+      // The grid ("container slots") inside the item where you can put other things
       "Grids": [
         {
           "_id": "belt_fannypackgrid",
@@ -148,13 +177,15 @@ await wttCommon.CustomItemServiceExtended.CreateCustomItems(
             "cellsV": 2,
             "filters": [
               {
-                "Filter": ["54009119af1c881c07000029"]
+                "Filter": ["54009119af1c881c07000029"] 
               }
             ]
           }
         }
       ]
     },
+
+    // How the item will appear in different languages ("locales")
     "locales": {
       "en": {
         "name": "Fanny Pack",
@@ -162,57 +193,108 @@ await wttCommon.CustomItemServiceExtended.CreateCustomItems(
         "description": "A fanny pack that can be worn at the waist."
       }
     },
+
+    // Price it will go for on the flea market (in roubles)
     "fleaPriceRoubles": 10900,
+
+    // Price in the handbook
     "handbookPriceRoubles": 7250,
+
+    // Which inventory slots this item can be added to (example slot: "ArmBand")
     "addtoInventorySlots": ["ArmBand"],
+
+    // Should it go in the hideout poster slots?
     "addtoHideoutPosterSlots": true,
+
+    // Should it be visible on posters/maps?  
     "addPosterToMaps": true,
+
+    // How likely it is to appear as a map poster
     "posterSpawnProbability": 10,
+
+    // Should it be available in statuette display slots in hideout?
     "addtoStatuetteSlots": true,
+
+    // (IF YOU ARE MAKING AMMO)Should it add ammo calibers to all clone locations?
     "addCaliberToAllCloneLocations": true,
+
+    // Should be included in static ammo tables (for spawns)
     "addtoStaticAmmo": true,
+
+    // Chance of spawning as static ammo
     "staticAmmoProbability": 5,
+
+    // Should it be available to bots/loadouts? (NOTE - THIS WILL PUSH TO BOT LOOT TABLES AT THE SAME PROBABILITY AS THE ITEM YOU'RE CLONING IF THAT BOT HAS THAT ITEM IN IT'S LOOT TABLE)
     "addtoBots": true,
+
+    // Should it be pushed to special slots
     "addtoSpecialSlots": true,
+
+    // Should it be pushed to anywhere the cloned item is allowed to go
     "addtoModSlots": true,
+
+    // What specific modSlot(s) to search for the cloned item ID and add yours to
     "modSlot": ["mod_muzzle"],
+
+    // Should it be available as a Hall of Fame item?
     "addtoHallOfFame": true,
+
+    // What hall of fame "slots"/categories this can go in
     "hallOfFameSlots": [
       "bigTrophies", 
       "smallTrophies", 
       "dogTags"
     ],
+
+    // Can it be used as generator fuel in hideout?
     "addtoGeneratorAsFuel": true,
+
+    // What stages of the generator it can be used in
     "generatorFuelSlotStages": [
       "1",
       "2",
       "3"
     ],
+
+    // Should it dynamically create a slot for a VANILLA ITEM THAT HAS A BONE PRESENT BUT NO SLOTS IN IT'S PROPS?
     "addtoEmptyPropSlots": true,
+
+    // Details for ONE empty prop slot it should be added to
     "emptyPropSlot": {
       "itemToAddTo": "628a66b41d5e41750e314f34",
       "modSlot": "mod_muzzle"
     },
+
+    // Should it be added to static loot containers (e.g., scav bodies)
     "addtoStaticLootContainers": true,
+
+    // List of containers and the chance it appears in them
     "StaticLootContainers": [
       {
-        "ContainerName": "LOOTCONTAINER_DEAD_SCAV",
-        "Probability": 54
+        "ContainerName": "LOOTCONTAINER_DEAD_SCAV", // ID or short name of container (SEE COMMONLIBS ITEMMAPS)
+        "Probability": 54 // percent chance to spawn
       }
     ],
+
+    // Should it be available in trader offers?
     "addtoTraders": true,
+
+    // Custom barter/trader settings
     "traders": {
       "RAGMAN": {
-        "681ce253b2fd4632d780ca88": {
+        // Offer ID (unique ID - use a mongoID generator for this)
+        "69093630552e8bcde48d4421": {
+          // Requirements for buying it at the trader
           "barterSettings": {
             "loyalLevel": 1,
             "unlimitedCount": true,
             "stackObjectsCount": 99
           },
+          // What you need to trade for it (roubles for example)
           "barters": [
             {
               "count": 26125,
-              "_tpl": "MONEY_ROUBLES"
+              "_tpl": "MONEY_ROUBLES" // Currency ID or short name (SEE SPT'S ITEMTPL CLASS)
             }
           ]
         }
@@ -247,9 +329,9 @@ await wttCommon.CustomItemServiceExtended.CreateCustomItems(
 
 **Usage**:
 ```csharp
-await wttCommon.CustomLocaleService.CreateCustomLocales();
+await wttCommon.CustomLocaleService.CreateCustomLocales(assembly);
 // Or specify custom path
-await wttCommon.CustomLocaleService.CreateCustomLocales( 
+await wttCommon.CustomLocaleService.CreateCustomLocales(assembly,
     Path.Join("db", "MyCustomLocalesFolder"));
 ```
 
@@ -281,9 +363,9 @@ await wttCommon.CustomLocaleService.CreateCustomLocales(
 
 **Usage**:
 ```csharp
-await wttCommon.CustomQuestService.CreateCustomQuests();
+await wttCommon.CustomQuestService.CreateCustomQuests(assembly);
 // Or specify custom path
-await wttCommon.CustomQuestService.CreateCustomQuests( 
+await wttCommon.CustomQuestService.CreateCustomQuests(assembly,
     Path.Join("db", "MyCustomQuestsFolder"));
 ```
 
@@ -388,9 +470,9 @@ Quests listed here will only be available to the specified PMC faction.
 
 **Usage**:
 ```csharp
-await wttCommon.CustomQuestZoneService.CreateCustomQuestZones();
+await wttCommon.CustomQuestZoneService.CreateCustomQuestZones(assembly);
 // Or specify custom path
-await wttCommon.CustomQuestZoneService.CreateCustomQuestZones( 
+await wttCommon.CustomQuestZoneService.CreateCustomQuestZones(assembly,
     Path.Join("db", "MyCustomQuestZonesFolder"));
 ```
 
@@ -436,9 +518,9 @@ await wttCommon.CustomQuestZoneService.CreateCustomQuestZones(
 
 **Usage**:
 ```csharp
-await wttCommon.CustomVoiceService.CreateCustomVoices();
+await wttCommon.CustomVoiceService.CreateCustomVoices(assembly);
 // Or specify custom path
-await wttCommon.CustomVoiceService.CreateCustomVoices( 
+await wttCommon.CustomVoiceService.CreateCustomVoices(assembly,
     Path.Join("db", "MyCustomVoicesFolder"));
 ```
 
@@ -471,9 +553,9 @@ await wttCommon.CustomVoiceService.CreateCustomVoices(
 
 **Usage**:
 ```csharp
-await wttCommon.CustomHeadService.CreateCustomHeads();
+await wttCommon.CustomHeadService.CreateCustomHeads(assembly);
 // Or specify custom path
-await wttCommon.CustomHeadService.CreateCustomHeads( 
+await wttCommon.CustomHeadService.CreateCustomHeads(assembly,
     Path.Join("db", "MyCustomHeadsFolder"));
 ```
 
@@ -506,9 +588,9 @@ await wttCommon.CustomHeadService.CreateCustomHeads(
 
 **Usage**:
 ```csharp
-await wttCommon.CustomClothingService.CreateCustomClothing();
+await wttCommon.CustomClothingService.CreateCustomClothing(assembly);
 // Or specify custom path
-await wttCommon.CustomClothingService.CreateCustomClothing( 
+await wttCommon.CustomClothingService.CreateCustomClothing(assembly,
     Path.Join("db", "MyCustomClothingFolder"));
 ```
 
@@ -549,9 +631,9 @@ await wttCommon.CustomClothingService.CreateCustomClothing(
 
 **Usage**:
 ```csharp
-await wttCommon.CustomBotLoadoutService.CreateCustomBotLoadouts();
+await wttCommon.CustomBotLoadoutService.CreateCustomBotLoadouts(assembly);
 // Or specify custom path
-await wttCommon.CustomBotLoadoutService.CreateCustomBotLoadouts( 
+await wttCommon.CustomBotLoadoutService.CreateCustomBotLoadouts(assembly,
     Path.Join("db", "MyCustomBotLoadoutsFolder"));
 ```
 
@@ -602,9 +684,9 @@ await wttCommon.CustomBotLoadoutService.CreateCustomBotLoadouts(
 
 **Usage**:
 ```csharp
-await wttCommon.CustomLootspawnService.CreateCustomLootspawns();
+await wttCommon.CustomLootspawnService.CreateCustomLootspawns(assembly);
 // Or specify custom path
-await wttCommon.CustomLootspawnService.CreateCustomLootspawns( 
+await wttCommon.CustomLootspawnService.CreateCustomLootspawns(assembly,
     Path.Join("db", "MyCustomLootspawnsFolder"));
 ```
 
@@ -820,9 +902,9 @@ db/CustomLootspawns/
 
 **Usage**:
 ```csharp
-await wttCommon.CustomAssortSchemeService.CreateCustomAssortSchemes();
+await wttCommon.CustomAssortSchemeService.CreateCustomAssortSchemes(assembly);
 // Or specify custom path
-await wttCommon.CustomAssortSchemeService.CreateCustomAssortSchemes( 
+await wttCommon.CustomAssortSchemeService.CreateCustomAssortSchemes(assembly,
     Path.Join("db", "MyCustomAssortSchemesFolder"));
 ```
 
@@ -909,9 +991,9 @@ Each file defines trader assortments with three main sections:
 
 **Usage**:
 ```csharp
-await wttCommon.CustomStaticSpawnService.CreateCustomStaticSpawns();
+await wttCommon.CustomStaticSpawnService.CreateCustomStaticSpawns(assembly);
 // Or specify custom path
-await wttCommon.CustomStaticSpawnService.CreateCustomStaticSpawns( 
+await wttCommon.CustomStaticSpawnService.CreateCustomStaticSpawns(assembly,
     Path.Join("db", "MyCustomStaticSpawnsFolder"));
 ```
 
@@ -1054,9 +1136,9 @@ Press **~** in-game to access the debug console:
 
 **Usage**:
 ```csharp
-await wttCommon.CustomHideoutRecipeService.CreateHideoutRecipes();
+await wttCommon.CustomHideoutRecipeService.CreateHideoutRecipes(assembly);
 // Or specify custom path
-await wttCommon.CustomHideoutRecipeService.CreateHideoutRecipes( 
+await wttCommon.CustomHideoutRecipeService.CreateHideoutRecipes(assembly,
     Path.Join("db", "MyCustomHideoutRecipesFolder"));
 ```
 
@@ -1107,9 +1189,9 @@ await wttCommon.CustomHideoutRecipeService.CreateHideoutRecipes(
 
 **Usage**:
 ```csharp
-await wttCommon.CustomRigLayoutService.CreateRigLayouts();
+await wttCommon.CustomRigLayoutService.CreateRigLayouts(assembly);
 // Or specify custom path
-await wttCommon.CustomRigLayoutService.CreateRigLayouts( 
+await wttCommon.CustomRigLayoutService.CreateRigLayouts(assembly,
     Path.Join("db", "MyCustomRigLayoutsFolder"));
 ```
 
@@ -1125,9 +1207,9 @@ await wttCommon.CustomRigLayoutService.CreateRigLayouts(
 
 **Usage**:
 ```csharp
-wttCommon.CustomSlotImageService.CreateSlotImages();
+wttCommon.CustomSlotImageService.CreateSlotImages(assembly);
 // Or specify custom path
-wttCommon.CustomSlotImageService.CreateSlotImages( 
+wttCommon.CustomSlotImageService.CreateSlotImages(assembly,
     Path.Join("db", "MyCustomSlotImagesFolder"));
 ```
 
@@ -1145,10 +1227,10 @@ wttCommon.CustomSlotImageService.CreateSlotImages(
 **Usage**:
 ```csharp
 // Use default path (db/CustomBuffs/)
-await wttCommon.CustomBuffService.CreateCustomBuffs();
+await wttCommon.CustomBuffService.CreateCustomBuffs(assembly);
 
 // Or specify custom path
-await wttCommon.CustomBuffService.CreateCustomBuffs( 
+await wttCommon.CustomBuffService.CreateCustomBuffs(assembly,
     Path.Join("db", "MyCustomBuffsFolder"));
 ```
 
@@ -1209,11 +1291,11 @@ await wttCommon.CustomBuffService.CreateCustomBuffs(
 
 **Usage**:
 ```csharp
-// Use default path (config/CustomProfiles/)
-await wttCommon.CustomProfileService.AddCustomProfiles();
+// Use default path (db/CustomProfiles/)
+await wttCommon.CustomProfileService.AddCustomProfiles(assembly);
 
 // Or specify custom path
-await wttCommon.CustomProfileService.AddCustomProfiles( 
+await wttCommon.CustomProfileService.AddCustomProfiles(assembly,
     Path.Join("config", "MyCustomProfilesFolder"));
 ```
 
@@ -1242,10 +1324,10 @@ await wttCommon.CustomProfileService.AddCustomProfiles(
 **Usage**:
 ```csharp
 // Use default path (db/CustomWeaponPresets/)
-await wttCommon.CustomWeaponPresetService.CreateCustomWeaponPresets();
+await wttCommon.CustomWeaponPresetService.CreateCustomWeaponPresets(assembly);
 
 // Or specify custom path
-await wttCommon.CustomWeaponPresetService.CreateCustomWeaponPresets( 
+await wttCommon.CustomWeaponPresetService.CreateCustomWeaponPresets(assembly,
     Path.Join("db", "MyCustomWeaponPresetsFolder"));
 ```
 
