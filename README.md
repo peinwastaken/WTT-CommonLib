@@ -24,6 +24,7 @@ A comprehensive modding library for SPT that simplifies adding custom content to
   - [CustomBuffService](#custombuffservice)
   - [CustomProfileService](#customprofileservice)
   - [CustomWeaponPresetService](#customweaponpresetservice)
+  - [CustomAudioService](#customaudioservice)
 - [Example Mod Structure](#example-mod-structure)
 - [Available Client Services](#available-client-services)
   - [CustomTemplateIdToObjectService](#customtemplateidtoobjectservice)
@@ -275,6 +276,10 @@ await wttCommon.CustomItemServiceExtended.CreateCustomItems(assembly,
         "Probability": 54 // percent chance to spawn
       }
     ],
+
+
+    // Should it be added to all secure case filters?
+    "addtoSecureFilters": true,
 
     // Should it be available in trader offers?
     "addtoTraders": true,
@@ -1495,6 +1500,82 @@ await wttCommon.CustomWeaponPresetService.CreateCustomWeaponPresets(assembly,
 **Important Notes**:
 - Preset structures **must match SPT's Preset model exactly** - invalid preset data will cause errors
 - If you are expecting to have a unique named preset, you must also push a locale for that preset for the name to be applied properly
+
+***
+
+## CustomAudioService
+
+### Purpose
+Handles registration and management of custom audio bundles for character creation face card audio, and radio audio. This service allows mods to associate audio clips with player faces and optionally include face-specific audio in radio pools, as well as just push custom audio to the radios.
+
+### Usage
+
+- Register audio asset bundles located in your mod folder.
+- Add audio keys for faces with the option to play them on radio only when the face is selected.
+- Add generic radio audio keys.
+
+### Key Methods
+
+- `RegisterAudioBundles(Assembly assembly, string? relativePath = null)`:  
+  Registers all `.bundle` audio files found in the default or specified path inside the mod folder.
+
+- `AddFaceCardAudio(string faceName, string audioKey, bool playOnRadioIfFaceIsSelected = false)`:  
+  Adds an audio key to a face card entry, optionally marking it for radio playback only when the face is active.
+
+- `AddRadioAudio(string audioKey)`:  
+  Adds an audio key directly to the global radio pool.
+
+### Configuration Entries
+
+- `FaceCardVolume`:  
+  Controls the volume level (0.0 to 1.0) of the custom audio played for face cards during character creation.
+
+- `GymEnabled`:  
+  Enables or disables the custom audio feature specifically for the Gym radio.
+
+- `GymReplacementChance`:  
+  A percentage (0 to 100) chance that custom audio will replace the default Gym radio audio on playback.
+
+- `GymPlayOnFirstEntrance`:  
+  If true, the radio will play custom audio when the player first enters the hideout if their face has a corresponding audio associated with it.
+
+- `GymRadioVolume`:  
+  Volume level (0.0 to 1.0) specifically for the Gym radio custom audio.
+
+- `RestSpaceEnabled`:  
+  Enables or disables custom audio for the Rest Space radio.
+
+- `RestSpaceReplacementChance`:  
+  Percentage chance for the Rest Space radio to play custom audio instead of default audio.
+
+- `RestSpacePlayOnFirstEntrance`:  
+  If true, the radio will play custom audio when the player first enters the hideout if their face has a corresponding audio associated with it.
+
+- `RestSpaceRadioVolume`:  
+  Volume for the Rest Space radio custom audio.
+
+### Example
+
+```csharp
+// Register audio bundles from your mod assembly
+wttCommon.CustomAudioService.RegisterAudioBundles(assembly);
+
+
+// Add face-specific audio keys without pushing to the radios
+wttCommon.CustomAudioService.AddFaceCardAudio("SoldierFace", "soldier_radio_01", false);
+
+// Add face-specific audio keys with radio playback condition
+wttCommon.CustomAudioService.AddFaceCardAudio("SoldierFace", "soldier_radio_01", true);
+
+// Add standalone radio audio
+wttCommon.CustomAudioService.AddRadioAudio("general_radio_ambient");
+
+```
+
+### Notes
+
+- Audio bundles must be packaged as Unity `.bundle` files and placed in the expected mod directory path (`db/CustomAudioBundles` by default).
+- Face card audio can be flagged to play on radio only when the corresponding face is in use, supporting dynamic sound experiences.
 
 ***
 
