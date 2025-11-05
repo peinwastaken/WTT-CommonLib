@@ -1506,7 +1506,7 @@ await wttCommon.CustomWeaponPresetService.CreateCustomWeaponPresets(assembly,
 ## CustomAudioService
 
 ### Purpose
-Handles registration and management of custom audio bundles for character creation face card audio, and radio audio.. This service allows mods to associate audio clips with player faces and optionally include face-specific audio in radio pools, as well as just push custom audio to the radios.
+Handles registration and management of custom audio bundles for character creation face card audio, and radio audio. This service allows mods to associate audio clips with player faces and optionally include face-specific audio in radio pools, as well as just push custom audio to the radios.
 
 ### Usage
 
@@ -1558,17 +1558,17 @@ Handles registration and management of custom audio bundles for character creati
 
 ```csharp
 // Register audio bundles from your mod assembly
-wttCustomAudioService.RegisterAudioBundles(assembly);
+wttCommon.CustomAudioService.RegisterAudioBundles(assembly);
 
 
 // Add face-specific audio keys without pushing to the radios
-wttCustomAudioService.AddFaceCardAudio("SoldierFace", "soldier_radio_01", false);
+wttCommon.CustomAudioService.AddFaceCardAudio("SoldierFace", "soldier_radio_01", false);
 
 // Add face-specific audio keys with radio playback condition
-wttCustomAudioService.AddFaceCardAudio("SoldierFace", "soldier_radio_01", true);
+wttCommon.CustomAudioService.AddFaceCardAudio("SoldierFace", "soldier_radio_01", true);
 
 // Add standalone radio audio
-wttCustomAudioService.AddRadioAudio("general_radio_ambient");
+wttCommon.CustomAudioService.AddRadioAudio("general_radio_ambient");
 
 ```
 
