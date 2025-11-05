@@ -1503,11 +1503,6 @@ await wttCommon.CustomWeaponPresetService.CreateCustomWeaponPresets(assembly,
 
 ***
 
-
-Here is a README section for the `WTTCustomAudioService` that keeps the structure and brevity consistent with your existing documentation style:
-
-***
-
 ## CustomAudioService
 
 ### Purpose
