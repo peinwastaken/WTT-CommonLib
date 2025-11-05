@@ -1565,14 +1565,16 @@ Handles registration and management of custom audio bundles for character creati
 // Register audio bundles from your mod assembly
 wttCustomAudioService.RegisterAudioBundles(assembly);
 
+
+// Add face-specific audio keys without pushing to the radios
+wttCustomAudioService.AddFaceCardAudio("SoldierFace", "soldier_radio_01", false);
+
 // Add face-specific audio keys with radio playback condition
 wttCustomAudioService.AddFaceCardAudio("SoldierFace", "soldier_radio_01", true);
 
 // Add standalone radio audio
 wttCustomAudioService.AddRadioAudio("general_radio_ambient");
 
-// Get the manifest for further processing or networking
-var manifest = wttCustomAudioService.GetAudioManifest();
 ```
 
 ### Notes
