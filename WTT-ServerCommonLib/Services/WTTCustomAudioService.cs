@@ -48,7 +48,7 @@ public class WTTCustomAudioService(ModHelper modHelper, SptLogger<WTTCustomAudio
     /// <param name="playOnRadioIfFaceIsSelected">
     /// If true, the audio will be included in the radio pool only when the face is actively selected. Defaults to false.
     /// </param>
-    public void AddFaceCardAudio(string faceName, string audioKey, bool playOnRadioIfFaceIsSelected = false)
+    public void CreateFaceCardAudio(string faceName, string audioKey, bool playOnRadioIfFaceIsSelected = false)
     {
         if (!_faceCardAudio.TryGetValue(faceName, out var entry))
         {
@@ -64,7 +64,7 @@ public class WTTCustomAudioService(ModHelper modHelper, SptLogger<WTTCustomAudio
     /// Adds a audio key to the global radio audio pool, which plays independent of face selection.
     /// </summary>
     /// <param name="audioKey">The name of the radio audio clip.</param>
-    public void AddRadioAudio(string audioKey)
+    public void CreateRadioAudio(string audioKey)
     {
         _radioAudio.Add(audioKey);
         LogHelper.Debug(logger, $"Added Radio audio: {audioKey}");

@@ -24,7 +24,7 @@ public class WTTCustomProfileService(
     /// </summary>
     /// <param name="assembly">The calling assembly, used to determine the mod folder location</param>
     /// <param name="relativePath">(OPTIONAL) Custom path relative to the mod folder</param>
-    public async Task AddCustomProfiles(Assembly assembly, string? relativePath = null)
+    public async Task CreateCustomProfiles(Assembly assembly, string? relativePath = null)
 
     {
         
