@@ -61,9 +61,21 @@ public class WTTCustomClothingService(
 
             var totalClothingCreated = 0;
             foreach (var configList in clothingConfigsList)
-            foreach (var config in configList)
-                if (ProcessClothingConfig(config))
-                    totalClothingCreated++;
+            {
+                foreach (var config in configList)
+                {
+                    try
+                    {
+                        config.Validate();
+                        if (ProcessClothingConfig(config))
+                            totalClothingCreated++;
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        logger.Error($"Config validation failed: {ex.Message}");
+                    }
+                }
+            }
 
             LogHelper.Debug(logger,
                 $"Created {totalClothingCreated} custom clothing items from {clothingConfigsList.Count} files");
@@ -286,15 +298,23 @@ public class WTTCustomClothingService(
         }
         else
         {
-            logger.Error( $"Invalid trader key: {config.TraderId}");
+            logger.Error($"Invalid trader key: {config.TraderId}");
             return;
         }
 
-        string currencyId = ItemTplResolver.ResolveId(config.CurrencyId);
-
         _database.Traders[actualTraderId].Base.CustomizationSeller = true;
-
         _database.Traders[actualTraderId].Suits ??= [];
+
+        var itemRequirements = new List<ItemRequirement>();
+        string currencyId = ItemTplResolver.ResolveId(config.CurrencyId);
+        itemRequirements.Add(new ItemRequirement
+        {
+            Id = null,
+            Type = "ItemRequirement",
+            Count = config.Price,
+            Tpl = currencyId,
+            OnlyFunctional = true
+        });
 
         var traderSuit = new Suit
         {
@@ -310,20 +330,10 @@ public class WTTCustomClothingService(
                 LoyaltyLevel = config.LoyaltyLevel,
                 ProfileLevel = config.ProfileLevel,
                 Standing = config.Standing,
-                SkillRequirements = [],
-                QuestRequirements = [],
-                AchievementRequirements = [],
-                ItemRequirements =
-                [
-                    new ItemRequirement
-                    {
-                        Id = null,
-                        Type = "ItemRequirement",
-                        Count = config.Price,
-                        Tpl = currencyId,
-                        OnlyFunctional = true
-                    }
-                ],
+                SkillRequirements = config.SkillRequirements ?? [],
+                QuestRequirements = config.QuestRequirements ?? [],
+                AchievementRequirements = config.AchievementRequirements ?? [],
+                ItemRequirements = itemRequirements,
                 RequiredTid = actualTraderId
             }
         };
