@@ -626,7 +626,9 @@ await wttCommon.CustomClothingService.CreateCustomClothing(assembly,
   "profileLevel": 1,
   "standing": 0,
   "currencyId": "ROUBLES",
-  "price": 150
+  "price": 150,
+  "achievementRequirements": [],
+  "questRequirements": []
 }
 ```
 </details>
@@ -1300,10 +1302,10 @@ await wttCommon.CustomBuffService.CreateCustomBuffs(assembly,
 **Usage**:
 ```csharp
 // Use default path (db/CustomProfiles/)
-await wttCommon.CustomProfileService.AddCustomProfiles(assembly);
+await wttCommon.CustomProfileService.CreateCustomProfiles(assembly);
 
 // Or specify custom path
-await wttCommon.CustomProfileService.AddCustomProfiles(assembly,
+await wttCommon.CustomProfileService.CreateCustomProfiles(assembly,
     Path.Join("config", "MyCustomProfilesFolder"));
 ```
 
@@ -1565,13 +1567,13 @@ wttCommon.CustomAudioService.RegisterAudioBundles(assembly);
 
 
 // Add face-specific audio keys without pushing to the radios
-wttCommon.CustomAudioService.AddFaceCardAudio("SoldierFace", "soldier_radio_01", false);
+wttCommon.CustomAudioService.CreateFaceCardAudio("SoldierFace", "soldier_radio_01", false);
 
 // Add face-specific audio keys with radio playback condition
-wttCommon.CustomAudioService.AddFaceCardAudio("SoldierFace", "soldier_radio_01", true);
+wttCommon.CustomAudioService.CreateFaceCardAudio("SoldierFace", "soldier_radio_01", true);
 
 // Add standalone radio audio
-wttCommon.CustomAudioService.AddRadioAudio("general_radio_ambient");
+wttCommon.CustomAudioService.CreateRadioAudio("general_radio_ambient");
 
 ```
 
