@@ -1,8 +1,10 @@
-﻿using SPTarkov.Server.Core.Models.Common;
+﻿using SPTarkov.DI.Annotations;
+using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
 
 namespace WTTServerCommonLib.Helpers;
 
+[Injectable]
 public class SlotHelper
 {
     public void ReplaceSlotFilters(TemplateItem item, int slotIndex, int filterIndex, HashSet<MongoId> ids)
