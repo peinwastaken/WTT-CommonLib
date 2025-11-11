@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using Comfort.Common;
 using EFT;
 using SPT.Reflection.Patching;
 using WTTClientCommonLib.Configuration;
@@ -21,7 +22,7 @@ internal class OnGameStarted : ModulePatch
     {
         try
         {
-            var currentMap = __instance.MainPlayer.Location;
+            var currentMap = Singleton<GameWorld>.Instance.LocationId;
             var questZones = QuestZones.GetZones();
             if (questZones == null || questZones.Count == 0)
             {
