@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WTT-ServerCommonLib", "WTT-
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WTT-ClientCommonLib", "WTT-ClientCommonLib\WTT-ClientCommonLib.csproj", "{612A2677-C48F-4A5F-9A7D-B3A803FF82B2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WTT-ClientCommonLibFika", "WTT-ClientCommonLibFika\WTT-ClientCommonLibFika.csproj", "{D6F52716-1232-489F-B1DC-AA77C69A19F3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,5 +25,11 @@ Global
 		{612A2677-C48F-4A5F-9A7D-B3A803FF82B2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{612A2677-C48F-4A5F-9A7D-B3A803FF82B2}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
 		{612A2677-C48F-4A5F-9A7D-B3A803FF82B2}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{D6F52716-1232-489F-B1DC-AA77C69A19F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6F52716-1232-489F-B1DC-AA77C69A19F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6F52716-1232-489F-B1DC-AA77C69A19F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6F52716-1232-489F-B1DC-AA77C69A19F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6F52716-1232-489F-B1DC-AA77C69A19F3}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6F52716-1232-489F-B1DC-AA77C69A19F3}.Publish|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -42,7 +42,7 @@ public class AssetLoader(ManualLogSource logger)
                 string.IsNullOrEmpty(config.BundleName) ||
                 string.IsNullOrEmpty(config.LocationID))
             {
-                LogHelper.LogDebug($"[WTT-Armory] Invalid config: {JsonConvert.SerializeObject(config)}");
+                LogHelper.LogDebug($"[WTT-ClientCommonLibFika] Invalid config: {JsonConvert.SerializeObject(config)}");
                 return;
             }
 
@@ -58,7 +58,7 @@ public class AssetLoader(ManualLogSource logger)
             // Evaluate conditions (all must pass)
             if (!EvaluateConditions(player, quest, config))
             {
-                LogHelper.LogDebug($"[WTT-Armory] Conditions not met for {config.PrefabName}");
+                LogHelper.LogDebug($"[WTT-ClientCommonLibFika] Conditions not met for {config.PrefabName}");
                 return;
             }
 
@@ -67,12 +67,18 @@ public class AssetLoader(ManualLogSource logger)
             if (prefab == null) return;
 
             var rotation = Quaternion.Euler(config.Rotation);
+            if (WTTClientCommonLib.FikaInstalled)
+            {
+                WTTClientCommonLib.SendFikaPacket(config, rotation);
+            }
+
             SpawnPrefab(prefab, config.Position, rotation);
-            LogHelper.LogDebug($"[WTT-Armory] Spawned {config.PrefabName}");
+
+            LogHelper.LogDebug($"[WTT-ClientCommonLibFika] Spawned {config.PrefabName}");
         }
         catch (Exception ex)
         {
-            logger.LogError($"[WTT-Armory] Config processing failed: {ex}");
+            logger.LogError($"[WTT-ClientCommonLibFika] Config processing failed: {ex}");
         }
     }
 
@@ -350,7 +356,6 @@ public class AssetLoader(ManualLogSource logger)
             logger.LogError($"[SPAWNER] Instantiation failed: {ex}");
         }
     }
-
     public void UnloadAllBundles()
     {
         if (_loadedBundles.Count == 0) return;

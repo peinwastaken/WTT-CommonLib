@@ -1,5 +1,7 @@
 using System;
+using System.Reflection;
 using BepInEx;
+using BepInEx.Bootstrap;
 using Comfort.Common;
 using EFT;
 using UnityEngine;
@@ -7,12 +9,14 @@ using WTTClientCommonLib.CommandProcessor;
 using WTTClientCommonLib.Components;
 using WTTClientCommonLib.Configuration;
 using WTTClientCommonLib.Helpers;
+using WTTClientCommonLib.Models;
 using WTTClientCommonLib.Patches;
 using WTTClientCommonLib.Services;
 
 namespace WTTClientCommonLib;
 
-[BepInPlugin("com.wtt.commonlib", "WTT-ClientCommonLib", "2.0.3")]
+[BepInDependency("com.fika.core", BepInDependency.DependencyFlags.SoftDependency)]
+[BepInPlugin("com.wtt.commonlib", "WTT-ClientCommonLib", "2.0.4")]
 public class WTTClientCommonLib : BaseUnityPlugin
 {
     private static CommandProcessor.CommandProcessor _commandProcessor;
@@ -22,13 +26,32 @@ public class WTTClientCommonLib : BaseUnityPlugin
     public AssetLoader AssetLoader;
     private PlayerWorldStats _playerWorldStats;
     public SpawnCommands SpawnCommands;
+    
+    private static object _fikaHelper;
+    private static System.Reflection.Assembly _fikaAssembly;
+    private static System.Type _fikaHelperType;
+    private static System.Reflection.MethodInfo _sendFikaPacketMethod;
+    
+    public static bool FikaInstalled { get; private set; }
     public static WTTClientCommonLib Instance { get; private set; }
     
     private void Awake()
     {
         Instance = this;
-     
         LogHelper.SetLogger(Logger);
+        
+        FikaInstalled = Chainloader.PluginInfos.ContainsKey("com.fika.core");
+        
+        if (FikaInstalled)
+        {
+            LogHelper.LogInfo("[WTT-CommonLib] Fika detected - loading Fika support");
+            LoadFikaModule();
+        }
+        else
+        {
+            LogHelper.LogInfo("[WTT-CommonLib] Fika not detected - single-player mode");
+        }
+
         try
         {
             AssetLoader = new AssetLoader(Logger);
@@ -56,21 +79,63 @@ public class WTTClientCommonLib : BaseUnityPlugin
         }
     }
 
-    internal void Start()
+    private void LoadFikaModule()
     {
-        Init();
-    }
-
-    private void Update()
-    {
-        if (Singleton<GameWorld>.Instantiated && (_gameWorld == null || Player == null))
+        try
         {
-            _gameWorld = Singleton<GameWorld>.Instance;
-            Player = _gameWorld.MainPlayer;
+            string pluginDir = System.IO.Path.GetDirectoryName(typeof(WTTClientCommonLib).Assembly.Location);
+            string fikaAssemblyPath = System.IO.Path.Combine(pluginDir, "WTT-ClientCommonLibFika.dll");
+            
+            if (!System.IO.File.Exists(fikaAssemblyPath))
+            {
+                LogHelper.LogError($"[WTT-CommonLib] Fika module not found at: {fikaAssemblyPath}");
+                FikaInstalled = false;
+                return;
+            }
+            
+            _fikaAssembly = System.Reflection.Assembly.LoadFrom(fikaAssemblyPath);
+            _fikaHelperType = _fikaAssembly.GetType("WTTClientCommonLib.Fika.Helpers.StaticSpawnFikaHelpers");
+            
+            if (_fikaHelperType != null)
+            {
+                _fikaHelper = Activator.CreateInstance(_fikaHelperType);
+                var subscribeMethod = _fikaHelperType.GetMethod("SubscribeToFikaEvents");
+                subscribeMethod?.Invoke(_fikaHelper, null);
+                
+                _sendFikaPacketMethod = _fikaHelperType.GetMethod("SendFikaSpawnPacket", 
+                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                
+                LogHelper.LogInfo("[WTT-CommonLib] Fika module loaded and initialized");
+            }
+            else
+            {
+                LogHelper.LogError("[WTT-CommonLib] Could not find StaticSpawnFikaHelpers type in Fika assembly");
+                FikaInstalled = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            LogHelper.LogError($"[WTT-CommonLib] Failed to load Fika module: {ex}");
+            FikaInstalled = false;
         }
     }
 
-    private void Init()
+    public static void SendFikaPacket(CustomSpawnConfig config, Quaternion rotation)
+    {
+        if (!FikaInstalled || _sendFikaPacketMethod == null)
+            return;
+
+        try
+        {
+            _sendFikaPacketMethod.Invoke(null, new object[] { config, rotation });
+        }
+        catch (Exception ex)
+        {
+            LogHelper.LogError($"[WTT-CommonLib] Failed to send Fika packet: {ex}");
+        }
+    }
+
+    internal void Start()
     {
         if (_commandProcessor == null)
         {
@@ -85,4 +150,14 @@ public class WTTClientCommonLib : BaseUnityPlugin
             DontDestroyOnLoad(_updaterObject);
         }
     }
+
+    private void Update()
+    {
+        if (Singleton<GameWorld>.Instantiated && (_gameWorld == null || Player == null))
+        {
+            _gameWorld = Singleton<GameWorld>.Instance;
+            Player = _gameWorld.MainPlayer;
+        }
+    }
 }
+

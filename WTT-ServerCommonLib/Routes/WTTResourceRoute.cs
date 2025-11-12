@@ -18,7 +18,7 @@ public class WTTResourcesRouter(
     WTTCustomStaticSpawnService staticSpawnService,
     WTTCustomVoiceService voiceService,
     WTTCustomAudioService audioService,
-    ISptLogger<WTTResourcesRouter> logger) : DynamicRouter(jsonUtil, [
+    ISptLogger<WTTResourcesRouter> logger) : StaticRouter(jsonUtil, [
     
     // Zones
     new RouteAction<EmptyRequestData>(
@@ -120,6 +120,4 @@ public class WTTResourcesRouter(
         }
     )
 
-])
-{
-}
+]);
