@@ -7,6 +7,18 @@ namespace WTTServerCommonLib.Helpers;
 [Injectable]
 public class ConfigHelper(ISptLogger<ConfigHelper> logger, JsonUtil jsonUtil)
 {
+    public T? TryDeserialize<T>(string jsonContent) where T : class
+    {
+        try
+        {
+            return jsonUtil.Deserialize<T>(jsonContent);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     public async Task<T?> LoadJsonFile<T>(string filePath) where T : class
     {
         if (!File.Exists(filePath))
@@ -66,8 +78,8 @@ public class ConfigHelper(ISptLogger<ConfigHelper> logger, JsonUtil jsonUtil)
     {
         var locales = new Dictionary<string, Dictionary<string, string>>();
 
-        var jsonFiles = Directory.GetFiles(directoryPath, "*.json")
-            .Concat(Directory.GetFiles(directoryPath, "*.jsonc"))
+        var jsonFiles = Directory.GetFiles(directoryPath, "*.json", SearchOption.AllDirectories)
+            .Concat(Directory.GetFiles(directoryPath, "*.jsonc", SearchOption.AllDirectories))
             .ToArray();
 
         foreach (var filePath in jsonFiles)
