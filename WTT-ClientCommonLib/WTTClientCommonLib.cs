@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Bootstrap;
@@ -16,7 +17,7 @@ using WTTClientCommonLib.Services;
 namespace WTTClientCommonLib;
 
 [BepInDependency("com.fika.core", BepInDependency.DependencyFlags.SoftDependency)]
-[BepInPlugin("com.wtt.commonlib", "WTT-ClientCommonLib", "2.0.4")]
+[BepInPlugin("com.wtt.commonlib", "WTT-ClientCommonLib", "2.0.5")]
 public class WTTClientCommonLib : BaseUnityPlugin
 {
     private static CommandProcessor.CommandProcessor _commandProcessor;
@@ -28,9 +29,9 @@ public class WTTClientCommonLib : BaseUnityPlugin
     public SpawnCommands SpawnCommands;
     
     private static object _fikaHelper;
-    private static System.Reflection.Assembly _fikaAssembly;
-    private static System.Type _fikaHelperType;
-    private static System.Reflection.MethodInfo _sendFikaPacketMethod;
+    private static Assembly _fikaAssembly;
+    private static Type _fikaHelperType;
+    private static MethodInfo _sendFikaPacketMethod;
     
     public static bool FikaInstalled { get; private set; }
     public static WTTClientCommonLib Instance { get; private set; }
@@ -83,17 +84,17 @@ public class WTTClientCommonLib : BaseUnityPlugin
     {
         try
         {
-            string pluginDir = System.IO.Path.GetDirectoryName(typeof(WTTClientCommonLib).Assembly.Location);
-            string fikaAssemblyPath = System.IO.Path.Combine(pluginDir, "WTT-ClientCommonLibFika.dll");
+            string pluginDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string fikaAssemblyPath = Path.Combine(pluginDir, "WTT-ClientCommonLibFika.dll");
             
-            if (!System.IO.File.Exists(fikaAssemblyPath))
+            if (!File.Exists(fikaAssemblyPath))
             {
                 LogHelper.LogError($"[WTT-CommonLib] Fika module not found at: {fikaAssemblyPath}");
                 FikaInstalled = false;
                 return;
             }
             
-            _fikaAssembly = System.Reflection.Assembly.LoadFrom(fikaAssemblyPath);
+            _fikaAssembly = Assembly.LoadFrom(fikaAssemblyPath);
             _fikaHelperType = _fikaAssembly.GetType("WTTClientCommonLib.Fika.Helpers.StaticSpawnFikaHelpers");
             
             if (_fikaHelperType != null)
@@ -103,7 +104,7 @@ public class WTTClientCommonLib : BaseUnityPlugin
                 subscribeMethod?.Invoke(_fikaHelper, null);
                 
                 _sendFikaPacketMethod = _fikaHelperType.GetMethod("SendFikaSpawnPacket", 
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                    BindingFlags.Public | BindingFlags.Static);
                 
                 LogHelper.LogInfo("[WTT-CommonLib] Fika module loaded and initialized");
             }
@@ -150,7 +151,7 @@ public class WTTClientCommonLib : BaseUnityPlugin
             DontDestroyOnLoad(_updaterObject);
         }
     }
-
+    
     private void Update()
     {
         if (Singleton<GameWorld>.Instantiated && (_gameWorld == null || Player == null))
