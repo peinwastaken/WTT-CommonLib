@@ -436,7 +436,7 @@ Quests listed here will only be available to the specified PMC faction.
 ```json
 {
   "success": {
-    "my_quest_id": "assort_item_id_to_unlock"
+    "assort_item_id_to_unlock": "my_quest_id"
   }
 }
 ```
@@ -1147,9 +1147,9 @@ await wttCommon.CustomHideoutRecipeService.CreateHideoutRecipes(assembly,
 
 **Usage**:
 ```csharp
-await wttCommon.CustomRigLayoutService.CreateRigLayouts(assembly);
+wttCommon.CustomRigLayoutService.CreateRigLayouts(assembly);
 // Or specify custom path
-await wttCommon.CustomRigLayoutService.CreateRigLayouts(assembly,
+wttCommon.CustomRigLayoutService.CreateRigLayouts(assembly,
     Path.Join("db", "MyCustomRigLayoutsFolder"));
 ```
 
