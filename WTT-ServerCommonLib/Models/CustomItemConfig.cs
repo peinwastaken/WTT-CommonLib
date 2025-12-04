@@ -234,7 +234,7 @@ public class CustomItemConfig
                     throw new InvalidDataException($"modSlot[{i}] must be a non-empty string");
         }
 
-        if (HallOfFameSlots != null)
+        if (HallOfFameSlots != null && AddToHallOfFame == true)
         {
             if (HallOfFameSlots.Count == 0)
                 throw new InvalidDataException("hallOfFameSlots was provided but is empty");
