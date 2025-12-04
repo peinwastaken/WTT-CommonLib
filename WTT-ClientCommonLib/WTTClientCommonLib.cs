@@ -17,7 +17,7 @@ using WTTClientCommonLib.Services;
 namespace WTTClientCommonLib;
 
 [BepInDependency("com.fika.core", BepInDependency.DependencyFlags.SoftDependency)]
-[BepInPlugin("com.wtt.commonlib", "WTT-ClientCommonLib", "2.0.5")]
+[BepInPlugin("com.wtt.commonlib", "WTT-ClientCommonLib", "2.0.6")]
 public class WTTClientCommonLib : BaseUnityPlugin
 {
     private static CommandProcessor.CommandProcessor _commandProcessor;
@@ -70,6 +70,8 @@ public class WTTClientCommonLib : BaseUnityPlugin
             new BoomboxAudioPatch().Enable();
             new OnGameStarted().Enable();
             new ClothingBundleRendererPatch().Enable();
+            new HideoutCustomizationIconPatch().Enable();
+            new HideoutCustomizationTexturesPatch().Enable();
 
             var resourceLoader = new ResourceLoader(Logger, AssetLoader);
             resourceLoader.LoadAllResourcesFromServer();

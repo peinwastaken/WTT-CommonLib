@@ -6,7 +6,7 @@
         <PackageId>WTT-ClientCommonLib</PackageId>
         <AssemblyVersion>$(Version)</AssemblyVersion>
         <FileVersion>$(Version)</FileVersion>
-        <Version>2.0.5</Version>
+        <Version>2.0.6</Version>
         <Authors>GrooveypenguinX</Authors>
         <Description>WTT Common Library - Client components</Description>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -84,6 +84,12 @@
         </Reference>
         <Reference Include="spt-common">
             <HintPath>..\..\..\BepInEx\plugins\spt\spt-common.dll</HintPath>
+        </Reference>
+        <Reference Include="spt-custom">
+          <HintPath>..\..\..\BepInEx\plugins\spt\spt-custom.dll</HintPath>
+        </Reference>
+        <Reference Include="spt-custom">
+          <HintPath>..\..\..\BepInEx\plugins\spt\spt-custom.dll</HintPath>
         </Reference>
         <Reference Include="spt-reflection">
             <HintPath>..\..\..\BepInEx\plugins\spt\spt-reflection.dll</HintPath>
