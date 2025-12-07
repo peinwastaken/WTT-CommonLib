@@ -24,25 +24,26 @@ public class GeneratorFuelHelper(ISptLogger<GeneratorFuelHelper> logger, Databas
 		}
 
 		if (generator.Stages != null)
-			foreach (var validStage in validStages)
-			{
-				if (!generator.Stages.TryGetValue(validStage, out Stage? stage))
+			if (validStages != null)
+				foreach (var validStage in validStages)
 				{
-					logger.Error($"Stage {validStage} not found in generator fuel.");
-					continue;
-				}
-
-				if (stage.Bonuses != null)
-					foreach (var bonus in stage.Bonuses)
+					if (!generator.Stages.TryGetValue(validStage, out Stage? stage))
 					{
-						if (bonus is not
-						    { Type: BonusType.AdditionalSlots, Filter: { } filter }) continue;
-						if (filter.Contains(itemId)) continue;
-
-						filter.Add(itemId);
-						LogHelper.Debug(logger,
-							$"[GeneratorFuel] Added item {itemId} as fuel to generator at stage with bonus ID {bonus.Id}");
+						logger.Error($"Stage {validStage} not found in generator fuel.");
+						continue;
 					}
-			}
+
+					if (stage.Bonuses != null)
+						foreach (var bonus in stage.Bonuses)
+						{
+							if (bonus is not
+							    { Type: BonusType.AdditionalSlots, Filter: { } filter }) continue;
+							if (filter.Contains(itemId)) continue;
+
+							filter.Add(itemId);
+							LogHelper.Debug(logger,
+								$"[GeneratorFuel] Added item {itemId} as fuel to generator at stage with bonus ID {bonus.Id}");
+						}
+				}
 	}
 }
