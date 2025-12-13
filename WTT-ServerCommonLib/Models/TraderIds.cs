@@ -14,6 +14,7 @@ public static class TraderIds
         { "jaeger", "5c0647fdd443bc2504c2d371" },
         { "ragman", "5ac3b934156ae10c4430e83c" },
         { "fence", "579dc571d53a0658a154fbec" },
+        { "ref", "6617beeaa9cfa777ca915b7c"},
         { "badger", "bd3a8b28356d9c6509966546" }
     };
 

@@ -1,4 +1,6 @@
 ﻿using SPTarkov.DI.Annotations;
+using SPTarkov.Server.Core.Extensions;
+using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
 using SPTarkov.Server.Core.Models.Utils;
 using SPTarkov.Server.Core.Services;
@@ -23,15 +25,25 @@ public class TraderItemHelper(ISptLogger<TraderItemHelper> logger, DatabaseServi
             var traders = databaseService.GetTraders();
             foreach (var (traderKey, schemes) in config.Traders)
             {
-                if (!TraderIds.TraderMap.TryGetValue(traderKey.ToLower(), out var traderId))
+                MongoId actualTraderId;
+
+                if (TraderIds.TraderMap.TryGetValue(traderKey.ToLower(), out var traderId))
                 {
-                    logger.Warning($"Unknown trader key '{traderKey}'");
+                    actualTraderId = traderId;
+                }
+                else if (traderKey.IsValidMongoId())
+                {
+                    actualTraderId = traderKey;
+                }
+                else
+                {
+                    logger.Error($"Invalid trader key: {traderKey}");
                     continue;
                 }
-
-                if (!traders.TryGetValue(traderId, out var trader))
+                
+                if (!traders.TryGetValue(actualTraderId, out var trader))
                 {
-                    logger.Warning($"Trader {traderId} not found in DB for item {itemId}");
+                    logger.Warning($"Trader not found in DB: ({actualTraderId})");
                     continue;
                 }
 
