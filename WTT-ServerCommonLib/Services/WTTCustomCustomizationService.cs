@@ -66,10 +66,6 @@ public class WTTCustomCustomizationService(
                 var customizationCreated = await LoadAndRegisterCustomizations(customizationDir);
                 LogHelper.Debug(logger, $"Created {customizationCreated} custom customization items");
             }
-            else
-            {
-                logger.Warning($"Customization directory not found at {customizationDir}");
-            }
 
             // Load customization storage entries
             var storageDir = Path.Combine(
@@ -81,10 +77,6 @@ public class WTTCustomCustomizationService(
             {
                 var storageCreated = await LoadAndRegisterCustomizationStorage(storageDir);
                 LogHelper.Debug(logger, $"Created {storageCreated} custom customization storage entries");
-            }
-            else
-            {
-                logger.Warning($"CustomizationStorage directory not found at {storageDir}");
             }
 
             // Load hideout customization configs
@@ -98,10 +90,6 @@ public class WTTCustomCustomizationService(
                 var hideoutCustomizationCreated = await LoadAndRegisterHideoutCustomizations(hideoutCustomizationDir);
                 LogHelper.Debug(logger, $"Created {hideoutCustomizationCreated} custom hideout customization configs");
             }
-            else
-            {
-                logger.Warning($"HideoutCustomization directory not found at {hideoutCustomizationDir}");
-            }
 
             // Load hideout customization icons
             var hideoutIconsDir = Path.Combine(
@@ -114,10 +102,6 @@ public class WTTCustomCustomizationService(
                 var iconsRegistered = LoadAndRegisterHideoutIcons(hideoutIconsDir);
                 LogHelper.Debug(logger, $"Registered {iconsRegistered} hideout customization icons");
             }
-            else
-            {
-                LogHelper.Debug(logger, $"HideoutIcons directory not found at {hideoutIconsDir}");
-            }
 
             // Load shooting range mark textures
             var markTexturesDir = Path.Combine(
@@ -129,10 +113,6 @@ public class WTTCustomCustomizationService(
             {
                 var texturesRegistered = LoadAndRegisterMarkTextures(markTexturesDir);
                 LogHelper.Debug(logger, $"Registered {texturesRegistered} shooting range mark textures");
-            }
-            else
-            {
-                LogHelper.Debug(logger, $"ShootingRangeMarkTextures directory not found at {markTexturesDir}");
             }
         }
         catch (Exception ex)

@@ -14,6 +14,13 @@ public class SlotHelper
 
         filter.Filter = ids;
     }
+    public void ModifySlotFilters(TemplateItem item, int slotIndex, int filterIndex, List<MongoId> ids, bool isCartridge = false)
+    {
+        var slot = GetSlotAtIndex(item, slotIndex, isCartridge);
+        var filter = GetSlotFilterAtIndex(slot, filterIndex);
+
+        filter.Filter!.UnionWith(ids);
+    }
     private Slot GetSlotAtIndex(TemplateItem item, int index, bool isCartridge = false)
     {
         var slots = isCartridge ? item.Properties?.Cartridges?.ToArray() : item.Properties?.Slots?.ToArray();

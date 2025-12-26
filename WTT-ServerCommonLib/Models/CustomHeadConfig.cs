@@ -11,4 +11,5 @@ public class CustomHeadConfig
     [JsonPropertyName("side")] public List<string> Side { get; set; } = new(Array.Empty<string>());
 
     [JsonPropertyName("locales")] public Dictionary<string, string>? Locales { get; set; }
+    [JsonPropertyName("availableAsDefault")] public bool? AvailableAsDefault { get; set; }
 }

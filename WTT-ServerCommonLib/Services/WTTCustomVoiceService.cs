@@ -91,7 +91,7 @@ public class WTTCustomVoiceService(
             }
 
             CreateAndAddVoice(voiceId, voiceConfig);
-            AddVoiceToCustomizationStorage(voiceId);
+            AddVoiceToCustomizationStorage(voiceId, voiceConfig);
             HandleLocale(voiceId, voiceConfig);
             ProcessBotVoices(voiceId, voiceConfig);
 
@@ -135,9 +135,10 @@ public class WTTCustomVoiceService(
         }
     }
 
-    private void AddVoiceToCustomizationStorage(string voiceId)
+    private void AddVoiceToCustomizationStorage(string voiceId, CustomVoiceConfig voiceConfig)
     {
         if (_database == null) return;
+        if (!voiceConfig.AddVoiceToPlayer) return;
 
         var customizationStorage = _database.Templates.CustomisationStorage;
 

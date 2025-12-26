@@ -128,7 +128,7 @@ public class WTTCustomClothingService(
                     Description = $"{config.TopId}_desc",
                     Name = $"{config.TopId}_name",
                     ShortName = $"{config.TopId}_shortName",
-                    Side = config.Side ?? ["Usec"],
+                    Side = config.Side ?? ["Usec", "Bear"],
                     BodyPart = "Body",
                     IntegratedArmorVest = false,
                     Prefab = new Prefab
@@ -158,7 +158,7 @@ public class WTTCustomClothingService(
                     Description = $"{config.HandsId}_desc",
                     Name = $"{config.HandsId}_name",
                     ShortName = $"{config.HandsId}_shortName",
-                    Side = config.Side ?? ["Usec"],
+                    Side = config.Side ?? ["Usec", "Bear"],
                     BodyPart = "Hands",
                     IntegratedArmorVest = false,
                     Prefab = new Prefab

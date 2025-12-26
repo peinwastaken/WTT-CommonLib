@@ -28,7 +28,17 @@ internal class ClothingBundleRendererPatch : ModulePatch
         try
         {
             // Get the asset and all SkinnedMeshRenderers
-            var asset = __instance.IEasyAssets.GetAsset<GameObject>(clothing.Prefab.path, clothing.Prefab.rcid);
+            GameObject asset = null;
+            try
+            {
+                asset = __instance.IEasyAssets.GetAsset<GameObject>(clothing.Prefab.path, clothing.Prefab.rcid);
+            }
+            catch (Exception ex)
+            {
+                // Bundle not loaded, fall back to original method
+                LogHelper.LogDebug($"Bundle not loaded for {clothing.Prefab.path}, using original method");
+                return true;
+            }
             var allRenderers = asset?.GetComponentsInChildren<SkinnedMeshRenderer>(true);
 
             // If no renderers or only one renderer, let the original method handle it

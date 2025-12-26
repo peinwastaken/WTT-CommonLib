@@ -88,7 +88,7 @@ public class WTTCustomHeadService(
             var customizationItem = GenerateHeadCustomizationItem(headId, customHeadConfig);
 
             AddHeadToTemplates(headId, customizationItem, customHeadConfig.AddHeadToPlayer);
-            AddHeadToCustomizationStorage(headId);
+            AddHeadToCustomizationStorage(headId, customHeadConfig.AddHeadToPlayer);
             AddHeadLocales(headId, customHeadConfig);
 
             LogHelper.Debug(logger, $"Created custom head {headId}");
@@ -111,14 +111,14 @@ public class WTTCustomHeadService(
             Type = "Item",
             Properties = new CustomizationProperties
             {
-                AvailableAsDefault = true,
+                AvailableAsDefault = customHeadConfig.AvailableAsDefault ?? true,
                 Name = "",
                 ShortName = "",
                 Description = "",
                 Side = customHeadConfig.Side,
                 BodyPart = "Head",
                 IntegratedArmorVest = false,
-                ProfileVersions = [..Array.Empty<string>()],
+                ProfileVersions = [],
                 Prefab = new Prefab
                 {
                     Path = customHeadConfig.Path,
@@ -141,7 +141,7 @@ public class WTTCustomHeadService(
                     Y = 0,
                     Z = 0
                 },
-                Game = [..Array.Empty<string>()],
+                Game = [],
                 Body = "",
                 Hands = "",
                 Feet = ""
@@ -150,9 +150,11 @@ public class WTTCustomHeadService(
         };
     }
 
-    private void AddHeadToCustomizationStorage(string headId)
+    private void AddHeadToCustomizationStorage(string headId, bool addHeadToPlayer)
     {
         if (_database == null) return;
+
+        if (!addHeadToPlayer) return;
 
         var customizationStorage = _database.Templates.CustomisationStorage;
 
