@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <OutputType>Library</OutputType>
         <PackageId>WTT-ServerCommonLib</PackageId>
-        <Version>2.0.8</Version>
+        <Version>2.0.9</Version>
         <Authors>GrooveypenguinX</Authors>
         <IsPackable>true</IsPackable>
         <Description>WTT Common Library - Server components</Description>
@@ -46,6 +46,10 @@
 
     <ItemGroup>
         <PackageReference Include="SPTarkov.Server.Core" Version="4.0.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Loaders\" />
     </ItemGroup>
 
     <!-- Post-Build: Copy DLLs and Resources to SPT and Build folders -->

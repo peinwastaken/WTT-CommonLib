@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using BepInEx.Logging;
 using EFT.Hideout;
@@ -225,117 +226,105 @@ public class ResourceLoader(ManualLogSource logger, AssetLoader assetLoader)
         }
     }
 
-    public static void LoadCustomMarkTexturesFromServer()
+    public static async Task LoadCustomMarkTexturesFromServer()
     {
         try
         {
-            LogHelper.LogDebug("[HideoutTextures] Loading custom shooting range mark textures from server...");
-            
-            var textureData = SPT.Common.Http.RequestHandler.GetJson("/wttcommonlib/hideout/marktextures/get");
-            if (string.IsNullOrEmpty(textureData))
+            LogHelper.LogDebug("[MarkTextures] Loading custom mark textures from server...");
+
+            await ImageManager.DownloadMarkTexturesManifest();
+
+            if (ImageManager.ShootingRangeMarks.Count == 0)
             {
-                LogHelper.LogWarn("[HideoutTextures] No mark textures received from server");
+                LogHelper.LogWarn("[MarkTextures] No textures in manifest");
                 return;
             }
 
-            var textureDict = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(textureData);
-            if (textureDict == null || textureDict.Count == 0)
-            {
-                LogHelper.LogWarn("[HideoutTextures] Texture dictionary is empty");
-                return;
-            }
-
+            LogHelper.LogDebug($"[MarkTextures] Manifest contains {ImageManager.ShootingRangeMarks.Count} textures");
+        
             int loadedCount = 0;
-            foreach (var kvp in textureDict)
+            foreach (var (fileName, imageItem) in ImageManager.ShootingRangeMarks)
             {
+                LogHelper.LogDebug($"[MarkTextures] Processing texture: {fileName}, ModPath: {imageItem.ModPath}");
+            
                 try
                 {
-                    var markId = kvp.Key;
-                    var base64Data = kvp.Value;
-
-                    if (string.IsNullOrEmpty(base64Data))
+                    var texture = await ImageManager.LoadMarkTexture(fileName);
+                    if (texture != null)
                     {
-                        LogHelper.LogWarn($"[HideoutTextures] Empty data for mark: {markId}");
-                        continue;
+                        var iconId = Path.GetFileNameWithoutExtension(fileName);
+                        texture.name = iconId;
+                        _customMarkTextures[iconId] = texture;
+                        loadedCount++;
+                        LogHelper.LogDebug($"[MarkTextures] Loaded icon for item: {fileName}");
                     }
-
-                    byte[] textureBytes = Convert.FromBase64String(base64Data);
-                    var texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-                    texture.LoadImage(textureBytes);
-                    texture.name = markId;
-
-                    _customMarkTextures[markId] = texture;
-                    loadedCount++;
-                    LogHelper.LogDebug($"[HideoutTextures] Loaded texture for mark: {markId}");
+                    else
+                    {
+                        LogHelper.LogWarn($"[MarkTextures] LoadImage returned null for: {fileName}");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    LogHelper.LogError($"[HideoutTextures] Error loading texture for {kvp.Key}: {ex.Message}");
+                    LogHelper.LogError($"[MarkTextures] Error loading texture {fileName}: {ex.Message}");
                 }
             }
 
-            LogHelper.LogDebug($"[HideoutTextures] Custom shooting range mark textures loaded successfully ({loadedCount} total)");
-
-            _texturesLoaded = true;
+            LogHelper.LogDebug($"[MarkTextures] Custom hideout icons loaded successfully ({loadedCount} total)");
+            _iconsLoaded = true;
         }
         catch (Exception ex)
         {
-            LogHelper.LogError($"[HideoutTextures] Error loading custom mark textures: {ex}");
+            LogHelper.LogError($"[MarkTextures] Error loading custom hideout icons: {ex}");
         }
     }
 
-    public static void LoadCustomHideoutIconsFromServer()
+    public static async Task LoadCustomHideoutIconsFromServer()
     {
         try
         {
             LogHelper.LogDebug("[HideoutIcons] Loading custom hideout customization icons from server...");
-            
-            var iconData = SPT.Common.Http.RequestHandler.GetJson("/wttcommonlib/hideout/icons/get");
-            if (string.IsNullOrEmpty(iconData))
+
+            await ImageManager.DownloadManifest();
+
+            if (ImageManager.HideoutIcons.Count == 0)
             {
-                LogHelper.LogWarn("[HideoutIcons] No hideout icons received from server");
+                LogHelper.LogWarn("[HideoutIcons] No icons in manifest");
                 return;
             }
 
-            var iconDict = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(iconData);
-            if (iconDict == null || iconDict.Count == 0)
-            {
-                LogHelper.LogWarn("[HideoutIcons] Icon dictionary is empty");
-                return;
-            }
-
+            LogHelper.LogDebug($"[HideoutIcons] Manifest contains {ImageManager.HideoutIcons.Count} icons");
+        
             int loadedCount = 0;
-            foreach (var kvp in iconDict)
+            foreach (var (fileName, imageItem) in ImageManager.HideoutIcons)
             {
+                LogHelper.LogDebug($"[HideoutIcons] Processing icon: {fileName}, ModPath: {imageItem.ModPath}");
+            
                 try
                 {
-                    var itemId = kvp.Key;
-                    var base64Data = kvp.Value;
-
-                    if (string.IsNullOrEmpty(base64Data))
+                    var texture = await ImageManager.LoadImage(fileName);
+                    if (texture != null)
                     {
-                        LogHelper.LogWarn($"[HideoutIcons] Empty data for item: {itemId}");
-                        continue;
+                        var sprite = Sprite.Create(
+                            texture,
+                            new Rect(0, 0, texture.width, texture.height),
+                            new Vector2(0.5f, 0.5f)
+                        );
+                        
+                        var iconId = Path.GetFileNameWithoutExtension(fileName);
+                        sprite.name = iconId;
+
+                        _customHideoutIcons[iconId] = sprite;
+                        loadedCount++;
+                        LogHelper.LogDebug($"[HideoutIcons] Loaded icon for item: {iconId}");
                     }
-
-                    byte[] textureData = Convert.FromBase64String(base64Data);
-                    var texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-                    texture.LoadImage(textureData);
-
-                    var sprite = Sprite.Create(
-                        texture,
-                        new Rect(0, 0, texture.width, texture.height),
-                        new Vector2(0.5f, 0.5f)
-                    );
-                    sprite.name = itemId;
-
-                    _customHideoutIcons[itemId] = sprite;
-                    loadedCount++;
-                    LogHelper.LogDebug($"[HideoutIcons] Loaded icon for item: {itemId}");
+                    else
+                    {
+                        LogHelper.LogWarn($"[HideoutIcons] LoadImage returned null for: {fileName}");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    LogHelper.LogError($"[HideoutIcons] Error loading icon for {kvp.Key}: {ex.Message}");
+                    LogHelper.LogError($"[HideoutIcons] Error loading icon {fileName}: {ex.Message}");
                 }
             }
 
@@ -347,6 +336,8 @@ public class ResourceLoader(ManualLogSource logger, AssetLoader assetLoader)
             LogHelper.LogError($"[HideoutIcons] Error loading custom hideout icons: {ex}");
         }
     }
+
+
     private void LoadRigLayoutsFromServer()
     {
         try

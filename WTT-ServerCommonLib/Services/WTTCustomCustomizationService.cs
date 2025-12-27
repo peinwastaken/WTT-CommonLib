@@ -281,12 +281,25 @@ public class WTTCustomCustomizationService(
     }
 
 
+    public string GetHideoutIconFullPath(string iconName)
+    {
+        if (_hideoutIconPaths.TryGetValue(iconName, out var path))
+        {
+            // Convert absolute path to relative path from SPT root
+            var rootPath = AppDomain.CurrentDomain.BaseDirectory;
+            var relativePath = Path.GetRelativePath(rootPath, path);
+            return relativePath;
+        }
+        return null;
+    }
+
     public async Task<byte[]?> GetHideoutIconData(string iconName)
     {
         if (_hideoutIconPaths.TryGetValue(iconName, out var path) && File.Exists(path))
             return await File.ReadAllBytesAsync(path);
         return null;
     }
+
 
 
     public List<string> GetMarkTextureManifest()
@@ -299,6 +312,18 @@ public class WTTCustomCustomizationService(
     {
         if (_markTexturePaths.TryGetValue(textureName, out var path) && File.Exists(path))
             return await File.ReadAllBytesAsync(path);
+        return null;
+    }
+    
+    public string GetMarkTextureFullPath(string textureName)
+    {
+        if (_markTexturePaths.TryGetValue(textureName, out var path))
+        {
+            // Convert absolute path to relative path from SPT root
+            var rootPath = AppDomain.CurrentDomain.BaseDirectory;
+            var relativePath = Path.GetRelativePath(rootPath, path);
+            return relativePath;
+        }
         return null;
     }
 }
