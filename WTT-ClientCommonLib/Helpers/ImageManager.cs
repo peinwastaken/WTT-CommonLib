@@ -76,7 +76,7 @@ public static class ImageManager
                 HideoutIcons.TryAdd(image.FileName, image);
             }
 
-            LogHelper.LogInfo($"Downloaded manifest for {images.Length} hideout icons");
+            LogHelper.LogDebug($"Downloaded manifest for {images.Length} hideout icons");
         }
         catch (Exception ex)
         {
@@ -100,7 +100,7 @@ public static class ImageManager
                 ShootingRangeMarks.TryAdd(texture.FileName, texture);
             }
 
-            LogHelper.LogInfo($"Downloaded manifest for {textures.Length} shooting range marks");
+            LogHelper.LogDebug($"Downloaded manifest for {textures.Length} shooting range marks");
         }
         catch (Exception ex)
         {
@@ -164,39 +164,6 @@ public static class ImageManager
         }
     }
 
-    public static async Task<bool> ShouldAcquire(ImageItem image, ImageType type)
-    {
-        if (RequestHandler.IsLocal)
-        {
-            LogHelper.LogDebug($"MOD: Loading locally {image.FileName}");
-            return false;
-        }
-
-        var filepath = GetImageFilePath(image, type);
-
-        if (VFS.Exists(filepath))
-        {
-            var data = await VFS.ReadFileAsync(filepath);
-            var crc = Crc32.HashToUInt32(data);
-
-            if (crc == image.Crc)
-            {
-                LogHelper.LogInfo($"CACHE: Loading locally {image.FileName}");
-                return false;
-            }
-            else
-            {
-                LogHelper.LogInfo($"CACHE: Image is invalid, (re-)acquiring {image.FileName}");
-                return true;
-            }
-        }
-        else
-        {
-            LogHelper.LogInfo($"CACHE: Image is missing, acquiring {image.FileName}");
-            return true;
-        }
-    }
-
     public static async Task<Texture2D?> LoadImage(string imageName)
     {
         if (!HideoutIcons.TryGetValue(imageName, out var image))
@@ -219,18 +186,78 @@ public static class ImageManager
         return await LoadImageInternal(textureName, texture, ImageType.ShootingRangeMark);
     }
 
+    public static async Task<bool> ShouldAcquire(ImageItem image, ImageType type)
+    {
+        var fikaInstalled = WTTClientCommonLib.WTTClientCommonLib.FikaInstalled;
+        
+        // If Fika is installed, always download (headless client can't access local mod files)
+        if (fikaInstalled)
+        {
+            LogHelper.LogDebug($"[ShouldAcquire] Fika detected, forcing download for {image.FileName}");
+            
+            var cachePath = GetCachePath(type);
+            var cacheFilepath = cachePath + image.FileName;
+
+            if (VFS.Exists(cacheFilepath))
+            {
+                var data = await VFS.ReadFileAsync(cacheFilepath);
+                var crc = Crc32.HashToUInt32(data);
+
+                if (crc == image.Crc)
+                {
+                    LogHelper.LogDebug($"[ShouldAcquire] CACHE: File up-to-date in cache: {image.FileName}");
+                    return false;
+                }
+
+                LogHelper.LogDebug($"[ShouldAcquire] CACHE: File invalid, re-acquiring: {image.FileName}");
+                return true;
+            }
+
+            LogHelper.LogDebug($"[ShouldAcquire] CACHE: File missing, acquiring: {image.FileName}");
+            return true;
+        }
+
+        var filepath = GetImageFilePath(image, type);
+
+        if (VFS.Exists(filepath))
+        {
+            if (RequestHandler.IsLocal)
+            {
+                LogHelper.LogDebug($"[ShouldAcquire] MOD: Loading locally {image.FileName}");
+                return false;
+            }
+            var data = await VFS.ReadFileAsync(filepath);
+            var crc = Crc32.HashToUInt32(data);
+
+            if (crc == image.Crc)
+            {
+                LogHelper.LogDebug($"[ShouldAcquire] CACHE: Loading locally {image.FileName}");
+                return false;
+            }
+
+            LogHelper.LogDebug($"[ShouldAcquire] CACHE: Image is invalid, (re-)acquiring {image.FileName}");
+            return true;
+        }
+
+        LogHelper.LogDebug($"[ShouldAcquire] CACHE: Image is missing, acquiring {image.FileName}");
+        return true;
+    }
+
     private static async Task<Texture2D?> LoadImageInternal(string imageName, ImageItem image, ImageType type)
     {
         try
         {
-            const bool TEST_MODE_FORCE_DOWNLOAD = false;
-        
+            var TEST_MODE_FORCE_DOWNLOAD = false;
+            var fikaInstalled = WTTClientCommonLib.WTTClientCommonLib.FikaInstalled;
+
             var cachePath = GetCachePath(type);
-            var filepath = TEST_MODE_FORCE_DOWNLOAD ? 
+            
+            // Use cache if TEST_MODE or Fika is installed
+            var filepath = (TEST_MODE_FORCE_DOWNLOAD || fikaInstalled) ? 
                 (cachePath + image.FileName) :  // Force cache
                 GetImageFilePath(image, type);    // Normal path
-    
-            LogHelper.LogDebug($"[LoadImage] TEST_MODE: {TEST_MODE_FORCE_DOWNLOAD}, Type: {type}, FilePath: {filepath}, IsLocal: {RequestHandler.IsLocal}");
+        
+            LogHelper.LogDebug($"[LoadImage] TEST_MODE: {TEST_MODE_FORCE_DOWNLOAD}, Fika: {fikaInstalled}, Type: {type}, FilePath: {filepath}, IsLocal: {RequestHandler.IsLocal}");
 
             if (TEST_MODE_FORCE_DOWNLOAD)
             {
@@ -244,13 +271,23 @@ public static class ImageManager
                     await DownloadImage(image, type);
                 }
             }
-            else if (!RequestHandler.IsLocal)
+            else if (fikaInstalled)
             {
+                // Fika headless: always check cache, download if needed
                 if (await ShouldAcquire(image, type))
                 {
                     await DownloadImage(image, type);
                 }
             }
+            else if (!RequestHandler.IsLocal)
+            {
+                // Remote client: normal cache logic
+                if (await ShouldAcquire(image, type))
+                {
+                    await DownloadImage(image, type);
+                }
+            }
+            // else: Local non-Fika: use mod folder files directly
 
             if (!VFS.Exists(filepath))
             {
@@ -276,6 +313,5 @@ public static class ImageManager
             return null;
         }
     }
-
     
 }
