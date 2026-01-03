@@ -9,6 +9,57 @@ namespace WTTServerCommonLib.Helpers;
 [Injectable]
 public class QuestHelper(ISptLogger<QuestHelper> logger)
 {
+    public void AddDogtagsToQuests(Dictionary<MongoId, Quest> quests, string questId, List<MongoId> dogtagIds, string faction)
+    {
+        if (!quests.TryGetValue(questId, out var quest))
+        {
+            logger.Warning($"Quest {questId} not found");
+            return;
+        }
+
+        if (quest.Conditions.AvailableForFinish == null)
+        {
+            logger.Warning($"Quest {questId} has no AvailableForFinish conditions");
+            return;
+        }
+
+        var factionId = faction.ToUpper() switch
+        {
+            "USEC" => "59f32c3b86f77472a31742f0",
+            "BEAR" => "59f32bb586f774757e1e8442",
+            _ => throw new ArgumentException($"Invalid faction: {faction}. Use 'USEC' or 'BEAR'")
+        };
+
+        var modified = false;
+
+        foreach (var condition in quest.Conditions.AvailableForFinish)
+        {
+            if (condition is { ConditionType: "HandoverItem" } &&
+                condition.Target?.List != null &&
+                condition.Target.List.Contains(factionId))
+            {
+                foreach (var dogtagId in dogtagIds)
+                {
+                    if (!condition.Target.List.Contains(dogtagId))
+                    {
+                        condition.Target.List.Add(dogtagId);
+                        modified = true;
+                        logger.Debug($"Added {faction} dogtag {dogtagId} to quest {questId}");
+                    }
+                }
+            }
+        }
+
+        if (modified)
+        {
+            logger.Debug($"Successfully added {faction} dogtags to quest {questId}");
+        }
+        else
+        {
+            logger.Warning($"No {faction} dogtag HandoverItem condition found in quest {questId}");
+        }
+    }
+
     public void AddWeaponsToKillCondition(Dictionary<MongoId, Quest> quests, string questId, string[] weaponIds)
     {
         if (!quests.TryGetValue(questId, out var quest))
