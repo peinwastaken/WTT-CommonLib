@@ -1,3 +1,6 @@
+- version bump (c74aa80)
+- added new dogtag method to questhelper (fe678b9)
+- Release v2.0.10 (ba57d8e)
 - added questhelper (29a14d5)
 - force cache if using fika because of local headless skill issue (ba7c9eb)
 - version bump (7dc2250)
