@@ -413,6 +413,9 @@ public class ResourceLoader(ManualLogSource logger, AssetLoader assetLoader)
                 100f
             );
 
+            sprite.texture.ignoreMipmapLimit = true;
+            sprite.texture.mipMapBias = -1f;
+
             ResourceHelper.AddEntry($"Slots/{slotID}", sprite);
             LogHelper.LogDebug($"Added slot sprite: {slotID}");
         }
