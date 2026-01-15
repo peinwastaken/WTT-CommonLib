@@ -48,6 +48,7 @@ public class WTTCustomDialogueService(
         }
 
         var traderDialogElements = databaseService.GetTemplates().Dialogue.Elements;
+        int added = 0;
         foreach (var file in jsonFiles)
         {
             try
@@ -60,18 +61,36 @@ public class WTTCustomDialogueService(
                     logger.Error($"Failed to load dialogue data from {file}");
                     continue;
                 }
+                
+                if (dialogueData.Count == 0)
+                {
+                    logger.Warning($"Dialogue file {Path.GetFileName(file)} is empty");
+                    continue;
+                }
 
                 foreach (var element in dialogueData)
                 {
-                    traderDialogElements.Add(element);
-                    LogHelper.Debug(logger, $"Successfully added custom dialogue to the server!");
-                    
+                    if (traderDialogElements.All(d => d.Id != element.Id))
+                    {
+                        traderDialogElements.Add(element);
+                        added++;
+                    }
+                    else
+                    {
+                        logger.Warning($"Dialogue element with ID {element.Id} already exists, skipping");
+                    }
+
                 }
             }
             catch (Exception ex)
             {
                 logger.Error($"Error loading dialogue file {file}: {ex.Message}");
             }
+        }
+
+        if (added > 0)
+        {
+            LogHelper.Debug(logger, $"Successfully added {added} custom dialogue to the server!");
         }
     }
 }
