@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using SPTarkov.DI.Annotations;
+﻿using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.DI;
 using SPTarkov.Server.Core.Models.Spt.Mod;
 using SPTarkov.Server.Core.Models.Utils;
@@ -46,6 +45,7 @@ public class WTTServerCommonLib(
     WTTCustomAudioService  customAudioService,
     WTTCustomAchievementService customAchievementService,
     WTTCustomCustomizationService customCustomizationService,
+    WTTCustomDialogueService customDialogueService,
     ISptLogger<WTTServerCommonLib> logger
 ) : IOnLoad
 {
@@ -69,6 +69,7 @@ public class WTTServerCommonLib(
     public WTTCustomAudioService CustomAudioService { get; } = customAudioService;
     public WTTCustomAchievementService CustomAchievementService { get; } = customAchievementService;
     public WTTCustomCustomizationService CustomCustomizationService { get; } = customCustomizationService;
+    public WTTCustomDialogueService CustomDialogueService { get; } = customDialogueService;
 
     public Task OnLoad()
     {
@@ -83,6 +84,7 @@ public class WTTServerCommonLibPostSptLoad(WTTCustomItemServiceExtended customIt
     {
         customItemServiceExtended.ProcessDeferredModSlots();
         customItemServiceExtended.ProcessDeferredSecureFilters();
+        customItemServiceExtended.ProcessDeferredCalibers();
         return Task.CompletedTask;
     }
 }

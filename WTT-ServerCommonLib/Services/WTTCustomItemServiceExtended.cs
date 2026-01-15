@@ -43,6 +43,8 @@ public class WTTCustomItemServiceExtended(
 {
     private readonly List<(string newItemId, CustomItemConfig config)> _deferredModSlotConfigs = new();
     private readonly List<(string newItemId, CustomItemConfig config)> _deferredSecureFilterConfigs = new();
+    private readonly List<(string newItemId, CustomItemConfig config)> _deferredCaliberConfigs = new();
+
     private DatabaseTables? _database;
 
     /// <summary>
@@ -159,7 +161,8 @@ public class WTTCustomItemServiceExtended(
             botLootHelper.AddToBotLoot(config, newItemId);
 
         if (config.AddCaliberToAllCloneLocations == true)
-            caliberHelper.AddNewCaliberToItems(config, newItemId);
+            AddDeferredCaliberConfig(newItemId, config);
+
 
         if (config is { AddToGeneratorAsFuel: true, GeneratorFuelSlotStages: not null })
             generatorFuelHelper.AddGeneratorFuel(config, newItemId);
@@ -182,6 +185,47 @@ public class WTTCustomItemServiceExtended(
             AddDeferredSecureFilters(newItemId, config);
 
     }
+    
+    private void AddDeferredCaliberConfig(string newItemId, CustomItemConfig config)
+    {
+        if (_deferredCaliberConfigs.Any(d => d.newItemId == newItemId))
+        {
+            logger.Warning($"Deferred caliber config for {newItemId} already exists, skipping.");
+            return;
+        }
+
+        _deferredCaliberConfigs.Add((newItemId, config));
+    }
+
+    public void ProcessDeferredCalibers()
+    {
+        if (_deferredCaliberConfigs.Count == 0)
+        {
+            LogHelper.Debug(logger, "No deferred caliber configs to process");
+            return;
+        }
+
+        LogHelper.Debug(logger, $"Processing {_deferredCaliberConfigs.Count} deferred caliber configs...");
+
+        foreach (var (newItemId, config) in _deferredCaliberConfigs)
+            try
+            {
+                if (_database == null) return;
+                caliberHelper.ProcessDeferredCalibers();
+
+                if (logger.IsLogEnabled(LogLevel.Debug))
+                    LogHelper.Debug(logger, $"Processed caliber config for {newItemId}");
+            }
+            catch (Exception ex)
+            {
+                logger.Critical($"Failed processing caliber config for {newItemId}", ex);
+            }
+
+        _deferredCaliberConfigs.Clear();
+
+        LogHelper.Debug(logger, "Finished processing deferred caliber configs");
+    }
+
 
     private void AddDeferredModSlot(string newItemId, CustomItemConfig config)
     {
