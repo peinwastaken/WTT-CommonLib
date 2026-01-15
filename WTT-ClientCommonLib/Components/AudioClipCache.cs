@@ -9,7 +9,7 @@ public class AudioClipCache : MonoBehaviour
 
     public void CacheAudioClip(string key, AudioClip clip)
     {
-        if (clip == null)
+        if (!clip)
         {
             LogHelper.LogWarn($"Attempted to cache null clip for key: {key}");
             return;
