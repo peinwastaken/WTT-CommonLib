@@ -633,6 +633,7 @@ await wttCommon.CustomClothingService.CreateCustomClothing(assembly,
   "questRequirements": []
 }
 ```
+**Note**: The Custom Clothing Service will attempt to automatically add the services tab to traders that do not already have it.
 </details>
 
 ---
