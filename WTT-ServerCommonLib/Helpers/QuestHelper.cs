@@ -159,4 +159,67 @@ public class QuestHelper(ISptLogger<QuestHelper> logger)
             }
         }
     }
+    
+    public void AddWeaponModToCondition(
+    Dictionary<MongoId, Quest> quests,
+    string questId,
+    string modId,
+    string existingModId,
+    bool isInclusive = true)
+{
+    if (!quests.TryGetValue(questId, out var quest) || quest.Conditions.AvailableForFinish == null)
+    {
+        logger.Warning($"Quest {questId} not found or has no AvailableForFinish conditions");
+        return;
+    }
+
+    var modType = isInclusive ? "Inclusive" : "Exclusive";
+    var modified = false;
+
+    foreach (var condition in quest.Conditions.AvailableForFinish)
+    {
+        if (condition is { ConditionType: "CounterCreator", Counter.Conditions: not null })
+        {
+            foreach (var counterCond in condition.Counter.Conditions)
+            {
+                var modList = isInclusive 
+                    ? (List<List<string>>)counterCond.WeaponModsInclusive 
+                    : (List<List<string>>)counterCond.WeaponModsExclusive;
+
+                if (modList != null)
+                {
+                    // Check if existing mod exists anywhere in the list of arrays
+                    var existingModExists = modList
+                        .Any(list => list.Contains(existingModId));
+
+                    if (existingModExists)
+                    {
+                        // Check if our mod already exists
+                        var modAlreadyExists = modList
+                            .Any(list => list.Contains(modId));
+
+                        if (!modAlreadyExists)
+                        {
+                            // Add as a new single-item array
+                            modList.Add([modId]);
+                            modified = true;
+                            logger.Debug($"Added mod {modId} to WeaponMods{modType} in quest {questId}");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (modified)
+    {
+        logger.Debug($"Successfully added mod to quest {questId}");
+    }
+    else
+    {
+        logger.Warning($"Existing mod {existingModId} not found in WeaponMods{modType} for quest {questId}");
+    }
+}
+
+
 }
