@@ -27,6 +27,7 @@ A comprehensive modding library for SPT that simplifies adding custom content to
   - [CustomAudioService](#customaudioservice)
   - [CustomAchievementService](#customachievementservice)
   - [CustomCustomizationService](#customcustomizationservice)
+  - [CustomDialogueService](#customdialogueservice)
 - [Example Mod Structure](#example-mod-structure)
 - [Available Client Services](#available-client-services)
   - [CustomTemplateIdToObjectService](#customtemplateidtoobjectservice)
@@ -1667,6 +1668,30 @@ Place JSON files and images in your mod's `db/CustomCustomization/` directory:
 
 **Important Notes**:
 - All Customization configs **must match BSG's models exactly**. That means CustomizationItems, CustomizationStorage, HideoutCustomizationGlobals all must match SPT's defined models.
+***
+
+### CustomDialogueService
+
+**Custom NPC Dialogue Management**
+
+The `WTTCustomDialogueService` loads custom NPC dialogues from JSON/JSONC files and registers them into the game database. This service allows you to extend trader conversations with custom dialogue trees and interactions.
+
+#### Usage
+
+```csharp
+// Use default path (db/CustomDialogues)
+await wttCommon.CustomDialogueService.CreateCustomDialogues(assembly);
+
+// Or specify custom path
+await wttCommon.CustomDialogueService.CreateCustomDialogues(assembly,
+    Path.Join("db", "MyCustomDialoguesFolder"));
+```
+
+#### Dialogue Format
+
+**IMPORTANT: Your dialogue structure MUST match BSG's dialogue model exactly.**
+- View `SPT/SPT_Data/database/templates/dialogue.json` and make sure your dialogue matches one of the "elements" objects 1:1.
+
 ***
 
 ## Example Mod Structure
