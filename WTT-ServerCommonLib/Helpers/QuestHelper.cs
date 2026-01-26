@@ -88,7 +88,15 @@ public class QuestHelper(ISptLogger<QuestHelper> logger)
 
                     if (counterCond is { Weapon: not null, ConditionType: "Kills" or "Shots" })
                     {
+
+                        
                         var beforeCount = counterCond.Weapon.Count;
+                        
+                        if (beforeCount == 0)
+                        {
+                            logger.Debug("  Skipping empty weapon array");
+                            continue;
+                        }
 
                         foreach (var weaponId in weaponIds)
                         {

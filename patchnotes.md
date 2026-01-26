@@ -1,3 +1,4 @@
+- Release v2.0.12 (045d2f9)
 - fat fingered the version lol (2474b29)
 - version bump (c16853f)
 - weapon mod quest helper method added (3835515)
