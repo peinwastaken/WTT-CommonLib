@@ -211,7 +211,7 @@ public class WTTCustomItemServiceExtended(
             try
             {
                 if (_database == null) return;
-                caliberHelper.ProcessDeferredCalibers();
+                caliberHelper.ProcessCaliberConfig(config, newItemId);
 
                 if (logger.IsLogEnabled(LogLevel.Debug))
                     LogHelper.Debug(logger, $"Processed caliber config for {newItemId}");
