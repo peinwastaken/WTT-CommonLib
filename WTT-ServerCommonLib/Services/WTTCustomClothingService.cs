@@ -359,8 +359,8 @@ public class WTTCustomClothingService(
                 if (localeInfo != null)
                 {
                     var itemKey = clothingId;
-                    var nameKey = $"{clothingId} name";
-                    var descriptionKey = $"{clothingId} description";
+                    var nameKey = $"{clothingId} Name";
+                    var descriptionKey = $"{clothingId} Description";
 
                     var nameValue = localeInfo.Name ?? "";
                     var descriptionValue = localeInfo.Description ?? "";
