@@ -1447,7 +1447,7 @@ public async Task OnLoad()
     // List your audio bundle paths to be sent to the client
     internal static readonly List<string> AudioBundleKeys = new()
     {
-        "audio/yojenkz.bundle"
+        "audio/mymodaudio.bundle"
     };
 
     // Register your audio bundles
