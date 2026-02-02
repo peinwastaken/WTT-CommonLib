@@ -38,7 +38,8 @@ public class WTTCustomItemServiceExtended(
     ConfigHelper configHelper,
     StaticAmmoHelper staticAmmoHelper,
     EmptyPropSlotHelper emptyPropSlotHelper,
-    SecureFiltersHelper secureFiltersHelper
+    SecureFiltersHelper secureFiltersHelper,
+    RandomLootContainerHelper randomLootContainerHelper
 )
 {
     private readonly List<(string newItemId, CustomItemConfig config)> _deferredModSlotConfigs = new();
@@ -87,7 +88,7 @@ public class WTTCustomItemServiceExtended(
             foreach (var configDict in itemConfigDicts)
             foreach (var (itemId, configData) in configDict)
             {
-                configData.Validate();
+                configData.Validate(itemId);
                 if (CreateItemFromConfig(itemId, configData))
                     totalItemsCreated++;
             }
@@ -163,7 +164,6 @@ public class WTTCustomItemServiceExtended(
         if (config.AddCaliberToAllCloneLocations == true)
             AddDeferredCaliberConfig(newItemId, config);
 
-
         if (config is { AddToGeneratorAsFuel: true, GeneratorFuelSlotStages: not null })
             generatorFuelHelper.AddGeneratorFuel(config, newItemId);
 
@@ -181,8 +181,12 @@ public class WTTCustomItemServiceExtended(
         
         if (config.AddToEmptyPropSlots == true)
             emptyPropSlotHelper.AddCustomSlots(config, newItemId);
+        
         if (config.AddToSecureFilters == true)
             AddDeferredSecureFilters(newItemId, config);
+        
+        if (config is { ParentId: "62f109593b54472778797866", IsRandomLootContainer: true } && config.RandomLootContainerRewards != null)
+            randomLootContainerHelper.ConfigureRandomLootContainer(config, newItemId);
 
     }
     
