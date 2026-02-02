@@ -104,4 +104,20 @@ public class ConfigHelper(ISptLogger<ConfigHelper> logger, JsonUtil jsonUtil)
 
         return locales;
     }
+
+    public void SaveJsonFileSync<T>(string filePath, T data) where T : class
+    {
+        try
+        {
+            // Use JsonUtil's synchronous serialize
+            var json = jsonUtil.Serialize(data, true);
+            File.WriteAllText(filePath, json);
+            LogHelper.Debug(logger, $"Saved file: {filePath}");
+        }
+        catch (Exception ex)
+        {
+            logger.Error($"Error saving file {filePath}: {ex.Message}");
+            throw;
+        }
+    }
 }
