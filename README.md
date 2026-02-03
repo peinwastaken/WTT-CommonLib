@@ -283,9 +283,46 @@ await wttCommon.CustomItemServiceExtended.CreateCustomItems(assembly,
       }
     ],
 
-
     // Should it be added to all secure case filters?
     "addtoSecureFilters": true,
+
+    // Is this a random loot container? (MUST HAVE RANDOMLOOTCONTAINER "62f109593b54472778797866" AS THIS ITEMS PARENT ID)
+    "isRandomLootContainer": true,
+
+    // Amount & rewards to give opening this loot container
+    "randomLootContainerRewards":
+    {
+          "rewardCount": 6,
+          "foundInRaid": true,
+          "rewardTplPool": {
+            "57514643245977207f2c2d09": 100,
+            "544fb62a4bdc2dfb738b4568": 100,
+            "57513f07245977207e26a311": 100,
+            "57513f9324597720a7128161": 100,
+            "57513fcc24597720a31c09a6": 100,
+            "5e8f3423fd7471236e6e3b64": 100,
+            "60b0f93284c20f0feb453da7": 100,
+            "5734773724597737fd047c14": 100,
+            "59e3577886f774176a362503": 100,
+            "57505f6224597709a92585a9": 100,
+            "544fb6cc4bdc2d34748b456e": 100,
+            "5751496424597720a27126da": 100,
+            "60098b1705871270cd5352a1": 100,
+            "5d40407c86f774318526545a": 100,
+            "5c0fa877d174af02a012e1cf": 100,
+            "575062b524597720a31c09a1": 100,
+            "575146b724597720a27126d5": 100,
+            "62a09f32621468534a797acb": 100,
+            "57347d7224597744596b4e72": 100,
+            "57347d5f245977448b40fa81": 100,
+            "65815f0e647e3d7246384e14": 100,
+            "635a758bfefc88a93f021b8a": 100,
+            "57347d692459774491567cf1": 100,
+            "5bc9c29cd4351e003562b8a3": 100,
+            "57347d8724597744596b4e76": 100,
+            "5c0530ee86f774697952d952": 10
+          }
+    },
 
     // Should it be available in trader offers?
     "addtoTraders": true,
