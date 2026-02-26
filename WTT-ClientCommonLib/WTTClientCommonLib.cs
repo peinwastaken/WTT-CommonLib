@@ -72,7 +72,8 @@ public class WTTClientCommonLib : BaseUnityPlugin
             new ClothingBundleRendererPatch().Enable();
             new HideoutCustomizationIconPatch().Enable();
             new HideoutCustomizationTexturesPatch().Enable();
-
+            new FixCustomItemSortingOrderPatch().Enable();
+            
             var resourceLoader = new ResourceLoader(Logger, AssetLoader);
             resourceLoader.LoadAllResourcesFromServer();
         }
