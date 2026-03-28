@@ -276,10 +276,10 @@ await wttCommon.CustomItemServiceExtended.CreateCustomItems(assembly,
     "addtoStaticLootContainers": true,
 
     // List of containers and the chance it appears in them
-    "StaticLootContainers": [
+    "staticLootContainers": [
       {
-        "ContainerName": "LOOTCONTAINER_DEAD_SCAV", // ID or short name of container (SEE COMMONLIBS ITEMMAPS)
-        "Probability": 54 // percent chance to spawn
+        "containerName": "LOOTCONTAINER_DEAD_SCAV", // ID or short name of container (SEE SPT SERVER ITEMTPL CLASS)
+        "probability": 54 // percent chance to spawn (NOT 0/100 chance, chance based on that container's loot dumps. Look at specific locations staticLoot.json)
       }
     ],
 
