@@ -1,4 +1,5 @@
-﻿using SPTarkov.DI.Annotations;
+﻿using System.Reflection;
+using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.DI;
 using SPTarkov.Server.Core.Models.Spt.Mod;
 using SPTarkov.Server.Core.Models.Utils;
@@ -73,6 +74,7 @@ public class WTTServerCommonLib(
 
     public Task OnLoad()
     {
+        CustomLocaleService.CreateCustomLocales(Assembly.GetExecutingAssembly());
         return Task.CompletedTask;
     }
 }

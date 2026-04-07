@@ -80,7 +80,7 @@ namespace WTTClientCommonLib.Patches
             {
                 new()
                 {
-                    Name = "Salvage".Localized(null),
+                    Name = "SALVAGE_ZONE".Localized(null),
                     Action = () => StartSalvage(owner, salvageTrigger, inventoryController)
                 }
             };
@@ -96,23 +96,26 @@ namespace WTTClientCommonLib.Patches
             var player = owner.Player;
             var items = player.Inventory.GetPlayerItems(EPlayerItems.InRaidItems).ToArray();
 
-            var requiredTpl = trigger.RequiredItemTpl;
+            MongoID requiredTpl = trigger.RequiredItemTpl;
             var requiredItem = items.FirstOrDefault(i => i.TemplateId == requiredTpl);
+
             if (requiredItem == null)
             {
-                NotificationManagerClass.DisplaySingletonWarningNotification(
-                    $"You need a {requiredItem.LocalizedName()} to salvage".Localized(null));
+                var itemName = requiredTpl.LocalizedName();
+                var message = string.Format("YOU_NEED_ITEM_TO_SALVAGE".Localized(null), itemName);
+
+                NotificationManagerClass.DisplaySingletonWarningNotification(message);
                 return;
             }
-
+            
             if (player.CurrentState is not IdleStateClass)
             {
                 NotificationManagerClass.DisplaySingletonWarningNotification(
-                    "You can't salvage while moving".Localized(null));
+                    "CANT_SALVAGE_WHILE_MOVING".Localized(null));
                 return;
             }
 
-            owner.ShowObjectivesPanel("Salvaging objective {0:F1}", trigger.SalvageTime);
+            owner.ShowObjectivesPanel("SALVAGING_OBJECTIVE", trigger.SalvageTime);
 
             var state = player.CurrentManagedState;
             bool isSilent = true;
@@ -132,11 +135,9 @@ namespace WTTClientCommonLib.Patches
                 owner.ClearInteractionState();
                 await ApplySalvageAsync(trigger, requiredItem, inventoryController, owner);
             }
-
-
-
             state.Plant(isSilent, isMultitool, time, OnPlantComplete);
         }
+        
         private static async Task ApplySalvageAsync(
             SalvageItemTrigger trigger,
             Item requiredItem,
