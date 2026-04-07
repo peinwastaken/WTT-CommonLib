@@ -32,7 +32,22 @@ public class SlotHelper
 
         throw new IndexOutOfRangeException($"Index on item slot property `{item.Name}` is out of range");
     }
+    public void AddIdsToNamedSlot(TemplateItem item, string slotName, params string[] ids)
+    {
+        var slot = item.Properties.Slots.FirstOrDefault(s => s.Name == slotName);
+        var slotFilter = slot?.Properties?.Filters?.FirstOrDefault();
 
+        if (slotFilter?.Filter == null)
+            return;
+
+        foreach (var id in ids)
+        {
+            if (!slotFilter.Filter.Contains(id))
+            {
+                slotFilter.Filter.Add(id);
+            }
+        }
+    }
     private SlotFilter GetSlotFilterAtIndex(Slot slot, int index)
     {
         var slotFilter = slot.Properties?.Filters?.ToArray() ?? [];
