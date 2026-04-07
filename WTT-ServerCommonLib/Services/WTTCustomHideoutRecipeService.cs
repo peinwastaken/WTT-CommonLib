@@ -21,14 +21,6 @@ public class WTTCustomHideoutRecipeService(
 {
     private DatabaseTables? _database;
 
-    /// <summary>
-    /// Loads custom hideout crafting recipes from JSON/JSONC files and registers them to the hideout production system.
-    /// 
-    /// Recipes are loaded from the mod's "db/CustomHideoutRecipes" directory (or a custom path if specified).
-    ///
-    /// </summary>
-    /// <param name="assembly">The calling assembly, used to determine the mod folder location</param>
-    /// <param name="relativePath">(OPTIONAL) Custom path relative to the mod folder</param>
     public async Task CreateHideoutRecipes(Assembly assembly, string? relativePath = null)
     {
         try
@@ -37,7 +29,8 @@ public class WTTCustomHideoutRecipeService(
             var defaultDir = Path.Combine("db", "CustomHideoutRecipes");
             var finalDir = Path.Combine(assemblyLocation, relativePath ?? defaultDir);
 
-            if (_database == null) _database = databaseServer.GetTables();
+            if (_database == null)
+                _database = databaseServer.GetTables();
 
             if (!Directory.Exists(finalDir))
             {
@@ -46,23 +39,24 @@ public class WTTCustomHideoutRecipeService(
             }
 
             var allRecipes = new List<HideoutProduction>();
-            var jsonFiles = Directory.GetFiles(finalDir, "*.json*", SearchOption.AllDirectories);
+            var jsonFiles = Directory.GetFiles(finalDir, "*.*", SearchOption.AllDirectories)
+                .Where(f => f.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ||
+                            f.EndsWith(".jsonc", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
 
             foreach (var filePath in jsonFiles)
             {
                 try
                 {
-                    var fileContent = await File.ReadAllTextAsync(filePath);
-                    
-                    var recipeArray = configHelper.TryDeserialize<List<HideoutProduction>>(fileContent);
-                    if (recipeArray != null && recipeArray.Count > 0)
+                    var recipeArray = await configHelper.LoadJsonFile<List<HideoutProduction>>(filePath);
+                    if (recipeArray is { Count: > 0 })
                     {
                         allRecipes.AddRange(recipeArray);
                         LogHelper.Debug(logger, $"Loaded {recipeArray.Count} recipes from {Path.GetFileName(filePath)}");
                         continue;
                     }
 
-                    var singleRecipe = configHelper.TryDeserialize<HideoutProduction>(fileContent);
+                    var singleRecipe = await configHelper.LoadJsonFile<HideoutProduction>(filePath);
                     if (singleRecipe != null)
                     {
                         allRecipes.Add(singleRecipe);
@@ -95,6 +89,7 @@ public class WTTCustomHideoutRecipeService(
 
                 var recipeExists = _database.Hideout.Production.Recipes != null &&
                                    _database.Hideout.Production.Recipes.Any(r => r.Id == recipe.Id);
+
                 if (recipeExists)
                 {
                     if (logger.IsLogEnabled(LogLevel.Debug))
@@ -105,8 +100,8 @@ public class WTTCustomHideoutRecipeService(
                 _database.Hideout.Production.Recipes?.Add(recipe);
                 LogHelper.Debug(logger, $"Added hideout recipe {recipe.Id} for item {recipe.EndProduct}");
             }
-            
-            logger.Info($"Successfully registered {allRecipes.Count} hideout recipes");
+
+            LogHelper.Debug(logger, $"Successfully registered {allRecipes.Count} hideout recipes");
         }
         catch (Exception ex)
         {
