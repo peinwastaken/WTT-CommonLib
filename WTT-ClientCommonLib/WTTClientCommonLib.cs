@@ -45,12 +45,12 @@ public class WTTClientCommonLib : BaseUnityPlugin
         
         if (FikaInstalled)
         {
-            LogHelper.LogInfo("[WTT-CommonLib] Fika detected - loading Fika support");
+            LogHelper.LogInfo("Fika detected - loading Fika support");
             LoadFikaModule();
         }
         else
         {
-            LogHelper.LogInfo("[WTT-CommonLib] Fika not detected - single-player mode");
+            LogHelper.LogInfo("Fika not detected - single-player mode");
         }
 
         try
@@ -72,8 +72,14 @@ public class WTTClientCommonLib : BaseUnityPlugin
             new ClothingBundleRendererPatch().Enable();
             new HideoutCustomizationIconPatch().Enable();
             new HideoutCustomizationTexturesPatch().Enable();
+            new HideSecretLockedQuestsPatch().Enable();
+            new GetActionsPatch().Enable();
+            new ConditionSerializerCtorPatch().Enable();
+            new Salvage_AddTriggerZonePatch().Enable();
+            new Salvage_RemoveTriggerZonePatch().Enable();
+            new Salvage_InteractionsChangedPatch().Enable();
+            new Salvage_InvokeConditionsPatch().Enable();
             new FixCustomItemSortingOrderPatch().Enable();
-            
             var resourceLoader = new ResourceLoader(Logger, AssetLoader);
             resourceLoader.LoadAllResourcesFromServer();
         }
@@ -92,7 +98,7 @@ public class WTTClientCommonLib : BaseUnityPlugin
             
             if (!File.Exists(fikaAssemblyPath))
             {
-                LogHelper.LogError($"[WTT-CommonLib] Fika module not found at: {fikaAssemblyPath}");
+                LogHelper.LogError($"Fika module not found at: {fikaAssemblyPath}");
                 FikaInstalled = false;
                 return;
             }
@@ -109,17 +115,17 @@ public class WTTClientCommonLib : BaseUnityPlugin
                 _sendFikaPacketMethod = _fikaHelperType.GetMethod("SendFikaSpawnPacket", 
                     BindingFlags.Public | BindingFlags.Static);
                 
-                LogHelper.LogInfo("[WTT-CommonLib] Fika module loaded and initialized");
+                LogHelper.LogInfo("Fika module loaded and initialized");
             }
             else
             {
-                LogHelper.LogError("[WTT-CommonLib] Could not find StaticSpawnFikaHelpers type in Fika assembly");
+                LogHelper.LogError("Could not find StaticSpawnFikaHelpers type in Fika assembly");
                 FikaInstalled = false;
             }
         }
         catch (Exception ex)
         {
-            LogHelper.LogError($"[WTT-CommonLib] Failed to load Fika module: {ex}");
+            LogHelper.LogError($"Failed to load Fika module: {ex}");
             FikaInstalled = false;
         }
     }
@@ -135,7 +141,7 @@ public class WTTClientCommonLib : BaseUnityPlugin
         }
         catch (Exception ex)
         {
-            LogHelper.LogError($"[WTT-CommonLib] Failed to send Fika packet: {ex}");
+            LogHelper.LogError($"Failed to send Fika packet: {ex}");
         }
     }
 

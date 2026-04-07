@@ -30,21 +30,60 @@ internal class OnGameStarted : ModulePatch
             }
 
             var validZones = questZones.Where(zone => zone.ZoneLocation.ToLower() == currentMap.ToLower()).ToList();
+            
             ZoneConfigManager.ExistingQuestZones = validZones;
             QuestZones.CreateZones(validZones);
 
             var player = __instance.MainPlayer;
-            if (player != null)
+            if (player == null)
             {
-                var locationID = __instance.LocationId;
-                if (player.Profile?.QuestsData == null) return;
-                if (locationID == null) return;
-
-                var loader = WTTClientCommonLib.Instance.AssetLoader;
-                var configs = loader.SpawnConfigs;
-                foreach (var config in configs)
-                    loader.ProcessSpawnConfig(__instance.MainPlayer, config, __instance.LocationId);    
+                LogHelper.LogError("MainPlayer is null in OnGameStarted");
+                return;
             }
+
+            var locationID = __instance.LocationId;
+            if (player.Profile == null)
+            {
+                LogHelper.LogError("Player.Profile is null");
+                return;
+            }
+
+            if (player.Profile.QuestsData == null)
+            {
+                LogHelper.LogError("Player.Profile.QuestsData is null");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(locationID))
+            {
+                LogHelper.LogError("LocationId is null/empty");
+                return;
+            }
+
+            var instance = WTTClientCommonLib.Instance;
+            if (instance == null)
+            {
+                LogHelper.LogError("Instance is null in OnGameStarted");
+                return;
+            }
+
+            var loader = instance.AssetLoader;
+            if (loader == null)
+            {
+                LogHelper.LogError("AssetLoader is null in OnGameStarted");
+                return;
+            }
+
+            var configs = loader.SpawnConfigs;
+            if (configs == null || configs.Count == 0)
+            {
+                LogHelper.LogDebug("No SpawnConfigs in OnGameStarted");
+                return;
+            }
+
+            LogHelper.LogDebug($"Processing {configs.Count} spawn configs for {locationID}");
+            foreach (var config in configs)
+                loader.ProcessSpawnConfig(__instance.MainPlayer, config, locationID);
             
         }
         catch (Exception e)

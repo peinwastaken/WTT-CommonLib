@@ -15,3 +15,10 @@ public class ZoneTransform
     public string Z { get; set; }
     public string W { get; set; }
 }
+
+public class ZoneTransforms
+{
+    public ZoneTransform Position { get; set; }
+    public ZoneTransform Rotation { get; set; }
+    public ZoneTransform Scale { get; set; }
+}

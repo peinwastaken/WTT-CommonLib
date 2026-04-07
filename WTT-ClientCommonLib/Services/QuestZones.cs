@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Comfort.Common;
 using EFT;
@@ -15,6 +16,10 @@ namespace WTTClientCommonLib.Services;
 
 internal class QuestZones
 {
+    private static readonly HashSet<string> _usedGroupPositions = new();
+
+    private static string PosKey(ZoneTransform p) => $"{p.X}|{p.Y}|{p.Z}";
+
     public static List<CustomQuestZone> GetZones()
     {
         var request = Utils.Get<List<CustomQuestZone>>("/wttcommonlib/zones/get");
@@ -26,9 +31,24 @@ internal class QuestZones
 
         foreach (var zone in request)
         {
-            zone.Position.W ??= "0";
-            zone.Rotation.W ??= "0";
-            zone.Scale.W ??= "0";
+            if (zone.Position != null)
+            {
+                zone.Position.W ??= "0";
+                zone.Rotation.W ??= "0";
+                zone.Scale.W ??= "0";
+            }
+            else
+            {
+                if (zone.GroupPosition != null)
+                {
+                    foreach (var randomZone in zone.GroupPosition)
+                    {
+                        randomZone.Position.W ??= "0";
+                        randomZone.Rotation.W ??= "0";
+                        randomZone.Scale.W ??= "0";
+                    }
+                }
+            }
         }
 #if DEBUG
         var loadedZoneCount = 0;
@@ -142,6 +162,62 @@ internal class QuestZones
         newZone.name = customQuestZone.ZoneId;
     }
 
+    private static void ZoneCreateSalvage(CustomQuestZone customQuestZone)
+    {
+        var salvage = customQuestZone.Salvage;
+        if (salvage == null)
+        {
+            LogHelper.LogWarn($"[QuestZones] Salvage zone '{customQuestZone.ZoneId}' missing Salvage config");
+            return;
+        }
+
+        var newZone = new GameObject();
+
+        var boxCollider = newZone.AddComponent<BoxCollider>();
+        boxCollider.isTrigger = true;
+
+        var position = new Vector3(
+            float.Parse(customQuestZone.Position.X),
+            float.Parse(customQuestZone.Position.Y),
+            float.Parse(customQuestZone.Position.Z));
+
+        var scale = new Vector3(
+            float.Parse(customQuestZone.Scale.X),
+            float.Parse(customQuestZone.Scale.Y),
+            float.Parse(customQuestZone.Scale.Z));
+
+        var rotation = new Quaternion(
+            float.Parse(customQuestZone.Rotation.X),
+            float.Parse(customQuestZone.Rotation.Y),
+            float.Parse(customQuestZone.Rotation.Z),
+            float.Parse(customQuestZone.Rotation.W));
+
+        newZone.transform.position = position;
+        newZone.transform.localScale = scale;
+        newZone.transform.rotation = rotation;
+
+        var trigger = newZone.AddComponent<SalvageItemTrigger>();
+        trigger.SetId(customQuestZone.ZoneId);
+
+
+        var rewards = salvage.Rewards?.Select(r => new SalvageItemTrigger.SalvageReward
+        {
+            ItemTpl = r.ItemTpl,
+            Count = r.Count,
+            ToQuestInventory = r.ToQuestInventory
+        }) ?? Array.Empty<SalvageItemTrigger.SalvageReward>();
+
+        trigger.Configure(
+            salvage.RequiredItemTpl,
+            salvage.SalvageTime,
+            rewards,
+            salvage.ConsumeRequiredItem 
+        );
+
+        newZone.layer = LayerMask.NameToLayer("Triggers");
+        newZone.name = customQuestZone.ZoneId;
+    }
+
     private static void ZoneCreateFlareZone(CustomQuestZone customQuestZone)
     {
         // Thank you Groovey :)
@@ -192,18 +268,65 @@ internal class QuestZones
         newZone.name = customQuestZone.ZoneId;
     }
 
-
     public static void CreateZones(List<CustomQuestZone> zones)
     {
+        _usedGroupPositions.Clear();
+
         foreach (var zone in zones)
         {
-            if (zone.ZoneType.ToLower() == "placeitem") ZoneCreateItem(zone);
+            ApplyGroupPositionIfAny(zone);
 
-            if (zone.ZoneType.ToLower() == "visit") ZoneCreateVisit(zone);
-
-            if (zone.ZoneType.ToLower() == "flarezone") ZoneCreateFlareZone(zone);
-
-            if (zone.ZoneType.ToLower() == "botkillzone") ZoneCreateBotKillZone(zone);
+            // Now create as normal
+            var type = zone.ZoneType.ToLowerInvariant();
+            if (type == "placeitem") ZoneCreateItem(zone);
+            if (type == "visit") ZoneCreateVisit(zone);
+            if (type == "flarezone") ZoneCreateFlareZone(zone);
+            if (type == "botkillzone") ZoneCreateBotKillZone(zone);
+            if (type == "salvage") ZoneCreateSalvage(zone);
         }
+    }
+
+    private static void ApplyGroupPositionIfAny(CustomQuestZone zone)
+    {
+        if (zone.GroupPosition == null || zone.GroupPosition.Count == 0)
+            return;
+
+        var candidates = new List<int>();
+        for (int i = 0; i < zone.GroupPosition.Count; i++)
+        {
+            var pos = zone.GroupPosition[i];
+            var key = PosKey(pos.Position);
+            if (!_usedGroupPositions.Contains(key))
+                candidates.Add(i);
+        }
+
+        int index;
+
+        if (candidates.Count > 0)
+        {
+            index = UnityEngine.Random.Range(0, candidates.Count);
+            index = candidates[index];
+        }
+        else
+        {
+            LogHelper.LogWarn(
+                $"[QuestZones] All GroupPosition positions for {zone.ZoneId} are already used; allowing reuse.");
+            index = UnityEngine.Random.Range(0, zone.GroupPosition.Count);
+        }
+
+        var selectedPose = zone.GroupPosition[index];
+
+        zone.Position = selectedPose.Position;
+        zone.Rotation = selectedPose.Rotation;
+        zone.Scale = selectedPose.Scale;
+
+        var usedKey = PosKey(selectedPose.Position);
+        _usedGroupPositions.Add(usedKey);
+
+#if DEBUG
+        LogHelper.LogDebug(
+            $"[QuestZones] GroupPosition[{index}] selected for {zone.ZoneId} " +
+            $"pos=({selectedPose.Position.X},{selectedPose.Position.Y},{selectedPose.Position.Z})");
+#endif
     }
 }

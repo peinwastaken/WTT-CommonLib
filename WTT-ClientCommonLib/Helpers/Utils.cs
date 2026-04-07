@@ -117,6 +117,24 @@ internal static class Utils
                     zoneObject.transform.rotation.y.ToString(), zoneObject.transform.rotation.z.ToString(),
                     zoneObject.transform.rotation.w.ToString())
             };
+
+            if (newCustomQuestZone.ZoneType == "salvage")
+            {
+                newCustomQuestZone.Salvage = new SalvageConfig
+                {
+                    RequiredItemTpl = "PUT YOUR REQUIRED ITEM TPL HERE",
+                    SalvageTime = 10f,
+                    Rewards = new List<SalvageRewardConfig>
+                    {
+                        new()
+                        {
+                            ItemTpl = "PUT YOUR REWARD ITEM HERE",
+                            Count = 1,
+                            ToQuestInventory = false
+                        }
+                    }
+                };
+            }
             convertedZones.Add(newCustomQuestZone);
         });
         return convertedZones;

@@ -226,7 +226,7 @@ public class WTTCustomQuestService(
     {
         if (assortFiles.Count == 0)
         {
-            logger.Warning($"{traderId}: No quest assort files found");
+            logger.Debug($"{traderId}: No quest assort files found");
             return;
         }
 
