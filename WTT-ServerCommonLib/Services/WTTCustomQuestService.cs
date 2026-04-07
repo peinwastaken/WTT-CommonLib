@@ -49,7 +49,7 @@ public class WTTCustomQuestService(
 
     {
         _database = databaseServer.GetTables();
-        
+
         var assemblyLocation = modHelper.GetAbsolutePathToModFolder(assembly);
         var defaultDir = Path.Combine("db", "CustomQuests");
         var finalDir = Path.Combine(assemblyLocation, relativePath ?? defaultDir);
@@ -180,7 +180,7 @@ public class WTTCustomQuestService(
     {
         if (questFiles.Count == 0)
         {
-            LogHelper.Debug(logger,$"{traderId}: No quest files found or loaded");
+            LogHelper.Debug(logger, $"{traderId}: No quest files found or loaded");
             return;
         }
 
@@ -262,40 +262,55 @@ public class WTTCustomQuestService(
     {
         var localesPath = Path.Combine(traderDir, "Locales");
 
+        if (!Directory.Exists(localesPath))
+        {
+            LogHelper.Debug(logger, $"{traderId}: No locales directory found at {localesPath}");
+            return;
+        }
+
+        Dictionary<string, Dictionary<string, string>> locales;
         try
         {
-            var locales = await configHelper.LoadLocalesFromDirectory(localesPath);
-
-            if (locales.Count == 0)
-            {
-                LogHelper.Debug(logger,$"{traderId}: No locale files found or loaded from {localesPath}");
-                return;
-            }
-
-            var fallback = locales.TryGetValue("en", out var englishLocales)
-                ? englishLocales
-                : locales.Values.FirstOrDefault();
-
-            if (fallback == null) return;
-
-            foreach (var (localeCode, lazyLocale) in _database.Locales.Global)
-                lazyLocale.AddTransformer(localeData =>
-                {
-                    if (localeData is null) return localeData;
-
-                    var customLocale = locales.GetValueOrDefault(localeCode, fallback);
-
-                    foreach (var (key, value) in customLocale) localeData[key] = value;
-
-                    return localeData;
-                });
-
-            LogHelper.Debug(logger, $"{traderId}: Registered transformers for {locales.Count} quest locale files");
+            locales = await configHelper.LoadLocalesFromDirectory(localesPath);
         }
         catch (Exception ex)
         {
-            logger.Error($"{traderId}: Error loading quest locales: {ex.Message}");
+            logger.Error($"{traderId}: Error loading locale files from {localesPath}: {ex.Message}");
+            return;
         }
+
+        if (locales.Count == 0)
+        {
+            LogHelper.Debug(logger, $"{traderId}: No locale files found or loaded from {localesPath}");
+            return;
+        }
+
+        var fallback = locales.TryGetValue("en", out var englishLocales)
+            ? englishLocales
+            : locales.Values.FirstOrDefault();
+
+        if (fallback == null)
+        {
+            LogHelper.Debug(logger, $"{traderId}: Locale directory loaded but no usable locale data was found");
+            return;
+        }
+
+        foreach (var (localeCode, lazyLocale) in _database.Locales.Global)
+        {
+            lazyLocale.AddTransformer(localeData =>
+            {
+                if (localeData is null) return localeData;
+
+                var customLocale = locales.GetValueOrDefault(localeCode, fallback);
+
+                foreach (var (key, value) in customLocale)
+                    localeData[key] = value;
+
+                return localeData;
+            });
+        }
+
+        LogHelper.Debug(logger, $"{traderId}: Registered transformers for {locales.Count} locale files");
     }
 
     private void ImportImageData(List<string> imageFiles, string traderId)
@@ -370,7 +385,7 @@ public class WTTCustomQuestService(
             var questConfig = cfgServer.GetConfig<QuestConfig>();
             if (config == null)
             {
-                LogHelper.Debug(logger,"QuestSideData.json is empty or invalid");
+                LogHelper.Debug(logger, "QuestSideData.json is empty or invalid");
                 return;
             }
 
