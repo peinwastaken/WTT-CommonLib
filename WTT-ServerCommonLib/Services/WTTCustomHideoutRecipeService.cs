@@ -46,30 +46,16 @@ public class WTTCustomHideoutRecipeService(
 
             foreach (var filePath in jsonFiles)
             {
-                try
-                {
-                    var recipeArray = await configHelper.LoadJsonFile<List<HideoutProduction>>(filePath);
-                    if (recipeArray is { Count: > 0 })
-                    {
-                        allRecipes.AddRange(recipeArray);
-                        LogHelper.Debug(logger, $"Loaded {recipeArray.Count} recipes from {Path.GetFileName(filePath)}");
-                        continue;
-                    }
+                var recipes = await configHelper.LoadJsonFileFlexible<HideoutProduction>(filePath);
 
-                    var singleRecipe = await configHelper.LoadJsonFile<HideoutProduction>(filePath);
-                    if (singleRecipe != null)
-                    {
-                        allRecipes.Add(singleRecipe);
-                        LogHelper.Debug(logger, $"Loaded 1 recipe from {Path.GetFileName(filePath)}");
-                    }
-                    else
-                    {
-                        logger.Warning($"Could not parse recipes from {Path.GetFileName(filePath)}");
-                    }
-                }
-                catch (Exception ex)
+                if (recipes.Count > 0)
                 {
-                    logger.Error($"Error loading file {Path.GetFileName(filePath)}: {ex.Message}");
+                    allRecipes.AddRange(recipes);
+                    LogHelper.Debug(logger, $"Loaded {recipes.Count} recipes from {Path.GetFileName(filePath)}");
+                }
+                else
+                {
+                    logger.Warning($"Could not parse recipes from {Path.GetFileName(filePath)}");
                 }
             }
 

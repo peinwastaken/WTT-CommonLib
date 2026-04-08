@@ -18,7 +18,54 @@ public class ConfigHelper(ISptLogger<ConfigHelper> logger, JsonUtil jsonUtil)
             return null;
         }
     }
+    public async Task<List<T>> LoadJsonFileFlexible<T>(string filePath) where T : class
+    {
+        var results = new List<T>();
 
+        if (!File.Exists(filePath))
+        {
+            logger.Warning($"File not found: {filePath}");
+            return results;
+        }
+
+        try
+        {
+            var json = await File.ReadAllTextAsync(filePath);
+            var trimmed = json.AsSpan().TrimStart();
+
+            if (trimmed.IsEmpty)
+            {
+                logger.Warning($"Empty JSON file: {filePath}");
+                return results;
+            }
+
+            if (trimmed[0] == '[')
+            {
+                var list = jsonUtil.Deserialize<List<T>>(json);
+                if (list != null)
+                    results.AddRange(list);
+            }
+            else if (trimmed[0] == '{')
+            {
+                var item = jsonUtil.Deserialize<T>(json);
+                if (item != null)
+                    results.Add(item);
+            }
+            else
+            {
+                logger.Warning($"Unsupported JSON root in {filePath}");
+            }
+
+            if (results.Count > 0)
+                LogHelper.Debug(logger, $"Loaded {results.Count} item(s) from: {filePath}");
+        }
+        catch (Exception ex)
+        {
+            logger.Error($"Error loading file {filePath}: {ex.Message}");
+        }
+
+        return results;
+    }
     public async Task<T?> LoadJsonFile<T>(string filePath) where T : class
     {
         if (!File.Exists(filePath))
